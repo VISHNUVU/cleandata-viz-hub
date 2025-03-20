@@ -1,23 +1,27 @@
 
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Bell, 
-  Globe, 
-  Key, 
-  Lock, 
-  LogOut, 
-  Mail, 
+  ArrowRight, 
+  Check, 
+  ChevronRight, 
+  CreditCard, 
+  Download, 
+  HelpCircle, 
+  InfoIcon, 
+  Languages, 
+  LayoutDashboard, 
   Moon, 
-  Palette, 
-  Shield, 
+  PaintBucket, 
+  RotateCcw, 
+  Save, 
+  Settings as SettingsIcon, 
+  Smartphone, 
   Sun, 
-  User, 
-  UserCircle 
+  User 
 } from "lucide-react";
 
 export default function Settings() {

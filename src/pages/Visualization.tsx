@@ -3,18 +3,33 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  AreaChart, 
+  AreaChart as AreaChartIcon, 
   BarChart3, 
   ChevronDown, 
   Download, 
   Filter, 
-  LineChart, 
+  LineChart as LineChartIcon, 
   PieChart as PieChartIcon, 
   RefreshCw, 
   Save, 
   Share2 
 } from "lucide-react";
-import { BarChart, AreaChart as RechartArea, LineChart as RechartLine, PieChart, Radar } from "recharts";
+import { 
+  BarChart, 
+  AreaChart, 
+  LineChart, 
+  PieChart, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Bar, 
+  Area, 
+  Line, 
+  Pie, 
+  Cell,
+  Legend 
+} from "recharts";
 
 const sampleData = [
   { name: "Jan", value: 400, category: "A" },
@@ -103,11 +118,11 @@ export default function Visualization() {
                       <span>Bar</span>
                     </TabsTrigger>
                     <TabsTrigger value="line" className="flex items-center gap-1.5">
-                      <LineChart className="h-4 w-4" />
+                      <LineChartIcon className="h-4 w-4" />
                       <span>Line</span>
                     </TabsTrigger>
                     <TabsTrigger value="area" className="flex items-center gap-1.5">
-                      <AreaChart className="h-4 w-4" />
+                      <AreaChartIcon className="h-4 w-4" />
                       <span>Area</span>
                     </TabsTrigger>
                     <TabsTrigger value="pie" className="flex items-center gap-1.5">
@@ -136,37 +151,37 @@ export default function Visualization() {
                       data={sampleData}
                       margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
                     >
-                      <cartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <xAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <yAxis tick={{ fill: '#6b7280' }} />
-                      <tooltip />
-                      <legend />
-                      <bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
+                      <YAxis tick={{ fill: '#6b7280' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="line" className="mt-0">
                   <div className="h-[400px] w-full flex justify-center items-center">
-                    <RechartLine
+                    <LineChart
                       width={800}
                       height={400}
                       data={sampleData}
                       margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
                     >
-                      <cartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <xAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <yAxis tick={{ fill: '#6b7280' }} />
-                      <tooltip />
-                      <legend />
-                      <line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
-                    </RechartLine>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
+                      <YAxis tick={{ fill: '#6b7280' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
+                    </LineChart>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="area" className="mt-0">
                   <div className="h-[400px] w-full flex justify-center items-center">
-                    <RechartArea
+                    <AreaChart
                       width={800}
                       height={400}
                       data={sampleData}
@@ -178,12 +193,12 @@ export default function Visualization() {
                           <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <cartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <xAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <yAxis tick={{ fill: '#6b7280' }} />
-                      <tooltip />
-                      <area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorValue)" />
-                    </RechartArea>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
+                      <YAxis tick={{ fill: '#6b7280' }} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorValue)" />
+                    </AreaChart>
                   </div>
                 </TabsContent>
                 
@@ -194,7 +209,7 @@ export default function Visualization() {
                       height={400}
                       margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
                     >
-                      <pie
+                      <Pie
                         data={pieData}
                         cx={200}
                         cy={200}
@@ -206,9 +221,9 @@ export default function Visualization() {
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={index === 0 ? 'hsl(var(--primary))' : ['#3b82f6', '#10b981', '#f59e0b', '#ec4899'][index % 4]} />
                         ))}
-                      </pie>
-                      <tooltip />
-                      <legend />
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
                     </PieChart>
                   </div>
                 </TabsContent>
@@ -300,7 +315,7 @@ export default function Visualization() {
                 </button>
                 
                 <button className="w-full flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors hover:border-primary/50">
-                  <LineChart className="h-5 w-5 text-blue-500 mr-3" />
+                  <LineChartIcon className="h-5 w-5 text-blue-500 mr-3" />
                   <div className="text-left">
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white">Trend Line Chart</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Show data changes over time</p>
@@ -316,7 +331,7 @@ export default function Visualization() {
                 </button>
                 
                 <button className="w-full flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors hover:border-primary/50">
-                  <AreaChart className="h-5 w-5 text-indigo-500 mr-3" />
+                  <AreaChartIcon className="h-5 w-5 text-indigo-500 mr-3" />
                   <div className="text-left">
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white">Area Chart</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Highlight total volume changes</p>

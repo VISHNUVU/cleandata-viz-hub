@@ -2,7 +2,22 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { AreaChart, BarChart, LineChart, PieChart } from "recharts";
+import { 
+  AreaChart, 
+  BarChart, 
+  LineChart, 
+  PieChart, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Line, 
+  Bar, 
+  Area, 
+  Pie, 
+  Cell,
+  Legend
+} from "recharts";
 import { 
   ArrowDown, 
   ArrowUp, 
@@ -193,12 +208,12 @@ export default function Dashboard() {
                           <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <cartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <xAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <yAxis tick={{ fill: '#6b7280' }} />
-                      <tooltip />
-                      <line type="monotone" dataKey="sales" stroke="hsl(var(--primary))" strokeWidth={2} />
-                      <line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
+                      <YAxis tick={{ fill: '#6b7280' }} />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="sales" stroke="hsl(var(--primary))" strokeWidth={2} />
+                      <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} />
                     </LineChart>
                   </div>
                 </TabsContent>
@@ -211,12 +226,12 @@ export default function Dashboard() {
                       data={sampleData}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
-                      <cartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <xAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <yAxis tick={{ fill: '#6b7280' }} />
-                      <tooltip />
-                      <bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                      <bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
+                      <YAxis tick={{ fill: '#6b7280' }} />
+                      <Tooltip />
+                      <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </div>
                 </TabsContent>
@@ -239,12 +254,12 @@ export default function Dashboard() {
                           <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <cartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <xAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <yAxis tick={{ fill: '#6b7280' }} />
-                      <tooltip />
-                      <area type="monotone" dataKey="sales" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorSales)" />
-                      <area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRevenue)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
+                      <YAxis tick={{ fill: '#6b7280' }} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="sales" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorSales)" />
+                      <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRevenue)" />
                     </AreaChart>
                   </div>
                 </TabsContent>
@@ -252,7 +267,7 @@ export default function Dashboard() {
                 <TabsContent value="pie" className="pt-2">
                   <div className="h-80 w-full flex justify-center items-center">
                     <PieChart width={400} height={300}>
-                      <pie
+                      <Pie
                         data={pieData}
                         cx={200}
                         cy={150}
@@ -265,8 +280,8 @@ export default function Dashboard() {
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={index === 0 ? 'hsl(var(--primary))' : ['#3b82f6', '#10b981', '#f59e0b'][index % 3]} />
                         ))}
-                      </pie>
-                      <tooltip />
+                      </Pie>
+                      <Tooltip />
                     </PieChart>
                   </div>
                 </TabsContent>
