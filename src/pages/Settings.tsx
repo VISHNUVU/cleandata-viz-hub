@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { 
   ArrowRight, 
   Check, 
@@ -21,10 +24,32 @@ import {
   Settings as SettingsIcon, 
   Smartphone, 
   Sun, 
-  User 
-} from "lucide-react";
+  User,
+  Palette,
+  Bell,
+  Shield,
+  UserCircle,
+  LogOut,
+  Globe,
+  Key,
+  Lock,
+  Mail
+} from 'lucide-react';
 
 export default function Settings() {
+  const [theme, setTheme] = useState("dark");
+  const [colorScheme, setColorScheme] = useState("indigo");
+
+  const handleThemeChange = (theme: string) => {
+    setTheme(theme);
+    // In a real app, would persist this to localStorage or a backend
+  };
+
+  const handleColorSchemeChange = (scheme: string) => {
+    setColorScheme(scheme);
+    // In a real app, would update theme colors
+  };
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -238,15 +263,27 @@ export default function Settings() {
                         </p>
                       </div>
                       <div className="flex space-x-3">
-                        <Button variant="outline" className="gap-2 h-10 px-4 rounded-lg">
+                        <Button 
+                          variant={theme === "light" ? "default" : "outline"} 
+                          className="gap-2 h-10 px-4 rounded-lg"
+                          onClick={() => handleThemeChange("light")}
+                        >
                           <Sun className="h-4 w-4" />
                           Light
                         </Button>
-                        <Button className="gap-2 h-10 px-4 rounded-lg">
+                        <Button 
+                          variant={theme === "dark" ? "default" : "outline"} 
+                          className="gap-2 h-10 px-4 rounded-lg"
+                          onClick={() => handleThemeChange("dark")}
+                        >
                           <Moon className="h-4 w-4" />
                           Dark
                         </Button>
-                        <Button variant="outline" className="gap-2 h-10 px-4 rounded-lg">
+                        <Button 
+                          variant={theme === "system" ? "default" : "outline"} 
+                          className="gap-2 h-10 px-4 rounded-lg"
+                          onClick={() => handleThemeChange("system")}
+                        >
                           <Globe className="h-4 w-4" />
                           System
                         </Button>
@@ -266,11 +303,26 @@ export default function Settings() {
                         </p>
                       </div>
                       <div className="flex space-x-3">
-                        <button className="h-10 w-10 rounded-full bg-blue-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none focus:ring-2 ring-blue-600 transition-shadow" />
-                        <button className="h-10 w-10 rounded-full bg-indigo-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none focus:ring-2 transition-shadow" />
-                        <button className="h-10 w-10 rounded-full bg-purple-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none focus:ring-2 transition-shadow" />
-                        <button className="h-10 w-10 rounded-full bg-emerald-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none focus:ring-2 transition-shadow" />
-                        <button className="h-10 w-10 rounded-full bg-amber-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none focus:ring-2 transition-shadow" />
+                        <button 
+                          className={`h-10 w-10 rounded-full bg-blue-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none ${colorScheme === 'blue' ? 'ring-2 ring-blue-600' : ''} transition-shadow`}
+                          onClick={() => handleColorSchemeChange('blue')}
+                        />
+                        <button 
+                          className={`h-10 w-10 rounded-full bg-indigo-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none ${colorScheme === 'indigo' ? 'ring-2 ring-indigo-600' : ''} transition-shadow`}
+                          onClick={() => handleColorSchemeChange('indigo')}
+                        />
+                        <button 
+                          className={`h-10 w-10 rounded-full bg-purple-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none ${colorScheme === 'purple' ? 'ring-2 ring-purple-600' : ''} transition-shadow`}
+                          onClick={() => handleColorSchemeChange('purple')}
+                        />
+                        <button 
+                          className={`h-10 w-10 rounded-full bg-emerald-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none ${colorScheme === 'emerald' ? 'ring-2 ring-emerald-600' : ''} transition-shadow`}
+                          onClick={() => handleColorSchemeChange('emerald')}
+                        />
+                        <button 
+                          className={`h-10 w-10 rounded-full bg-amber-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 focus:outline-none ${colorScheme === 'amber' ? 'ring-2 ring-amber-600' : ''} transition-shadow`}
+                          onClick={() => handleColorSchemeChange('amber')}
+                        />
                       </div>
                     </div>
                     
@@ -413,30 +465,28 @@ export default function Settings() {
                             id="current-password"
                             type="password"
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                            placeholder="Enter current password"
+                            placeholder="••••••••"
                           />
                         </div>
-                        <div className="space-y-3">
-                          <div />
-                          <div />
-                        </div>
-                        <div className="space-y-3">
-                          <Label htmlFor="new-password">New Password</Label>
-                          <input
-                            id="new-password"
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                            placeholder="Enter new password"
-                          />
-                        </div>
-                        <div className="space-y-3">
-                          <Label htmlFor="confirm-password">Confirm New Password</Label>
-                          <input
-                            id="confirm-password"
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                            placeholder="Confirm new password"
-                          />
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <Label htmlFor="new-password">New Password</Label>
+                            <input
+                              id="new-password"
+                              type="password"
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                              placeholder="••••••••"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <Label htmlFor="confirm-password">Confirm New Password</Label>
+                            <input
+                              id="confirm-password"
+                              type="password"
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                              placeholder="••••••••"
+                            />
+                          </div>
                         </div>
                       </div>
                       <Button className="mt-2">Update Password</Button>

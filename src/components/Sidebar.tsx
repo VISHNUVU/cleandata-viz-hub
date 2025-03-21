@@ -1,119 +1,95 @@
 
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
-  Upload, 
-  Filter, 
+  ArrowUpFromLine, 
+  Search, 
   BarChart2, 
-  FileText, 
-  Settings, 
-  LogOut,
-  Menu,
-  X
-} from 'lucide-react';
+  FileText,
+  Settings
+} from "lucide-react";
+import UserProfile from "./UserProfile";
+import { ThemeToggle } from "./ThemeToggle";
+import { Separator } from "./ui/separator";
 
-const navItems = [
-  { path: '/', name: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-  { path: '/data-upload', name: 'Data Upload', icon: <Upload className="w-5 h-5" /> },
-  { path: '/data-cleansing', name: 'Data Cleansing', icon: <Filter className="w-5 h-5" /> },
-  { path: '/visualization', name: 'Visualization', icon: <BarChart2 className="w-5 h-5" /> },
-  { path: '/reports', name: 'Reports', icon: <FileText className="w-5 h-5" /> },
-  { path: '/settings', name: 'Settings', icon: <Settings className="w-5 h-5" /> },
+const navigationItems = [
+  {
+    name: "Dashboard",
+    path: "/",
+    icon: <LayoutDashboard className="h-5 w-5" />
+  },
+  {
+    name: "Data Upload",
+    path: "/data-upload",
+    icon: <ArrowUpFromLine className="h-5 w-5" />
+  },
+  {
+    name: "Data Cleansing",
+    path: "/data-cleansing",
+    icon: <Search className="h-5 w-5" />
+  },
+  {
+    name: "Visualization",
+    path: "/visualization",
+    icon: <BarChart2 className="h-5 w-5" />
+  },
+  {
+    name: "Reports",
+    path: "/reports",
+    icon: <FileText className="h-5 w-5" />
+  },
+  {
+    name: "Settings",
+    path: "/settings",
+    icon: <Settings className="h-5 w-5" />
+  }
 ];
 
 export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  
-  // Close sidebar when route changes (mobile)
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location.pathname]);
-  
-  // Close sidebar when window resizes to larger than mobile
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsOpen(false);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
+
   return (
-    <>
-      {/* Mobile menu button */}
-      <button
-        type="button"
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-full bg-primary text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-white transition-all duration-200 hover:bg-primary/90"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Toggle menu"
-      >
-        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
-      
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-white">
-              <BarChart2 className="w-5 h-5" />
-            </div>
-            <span className="ml-3 text-lg font-semibold text-gray-900 dark:text-white">DataViz Pro</span>
+            <svg className="h-8 w-8 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V7C20 7.55228 19.5523 8 19 8H5C4.44772 8 4 7.55228 4 7V5Z" fill="currentColor"></path>
+              <path d="M4 11C4 10.4477 4.44772 10 5 10H19C19.5523 10 20 10.4477 20 11V13C20 13.5523 19.5523 14 19 14H5C4.44772 14 4 13.5523 4 13V11Z" fill="currentColor"></path>
+              <path d="M5 16C4.44772 16 4 16.4477 4 17V19C4 19.5523 4.44772 20 5 20H19C19.5523 20 20 19.5523 20 19V17C20 16.4477 19.5523 16 19 16H5Z" fill="currentColor"></path>
+            </svg>
+            <span className="ml-2 text-xl font-semibold text-gray-800 dark:text-white">DataViz Pro</span>
           </div>
-        </div>
-        
-        {/* Navigation */}
-        <nav className="px-4 py-6 space-y-1.5">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 group ${
-                  isActive 
-                    ? 'bg-primary text-white' 
-                    : 'text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                <span className={`${isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'} mr-3`}>
-                  {item.icon}
-                </span>
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-        
-        {/* User profile */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <div className="flex items-center">
-            <img className="h-9 w-9 rounded-full object-cover border border-gray-200 dark:border-gray-700" src="https://avatar.iran.liara.run/public" alt="User avatar" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-800 dark:text-white">Alex Morgan</p>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Data Analyst</p>
-            </div>
-            <button className="ml-auto p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none transition-colors">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
+          <ThemeToggle />
         </div>
       </div>
-      
-      {/* Overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </>
+
+      {/* Navigation Items */}
+      <div className="px-4 py-6 space-y-1 flex-1 overflow-auto">
+        {navigationItems.map((item) => (
+          <NavLink 
+            key={item.path} 
+            to={item.path}
+            className={({ isActive }) => 
+              isActive 
+                ? "flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 transition-colors duration-200" 
+                : "flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+            }
+            end
+          >
+            <span className="mr-3">{item.icon}</span>
+            {item.name}
+          </NavLink>
+        ))}
+      </div>
+
+      {/* User Profile Section */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <UserProfile />
+      </div>
+    </div>
   );
 }
