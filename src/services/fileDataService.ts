@@ -1,7 +1,8 @@
 
-import { FileData, UploadedFile } from '@/types/file';
+import { FileData, UploadedFile, Column, ColumnStats } from '@/types/file';
 import { getMockRecentUploads, getMockFileData } from './mockDataService';
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 // Get recent uploads from Supabase
 export const getRecentUploads = async (limit: number = 10): Promise<UploadedFile[]> => {
@@ -71,12 +72,16 @@ export const getFileAnalysis = async (fileId: string): Promise<FileData | null> 
 // Save file analysis data
 export const saveFileAnalysis = async (fileId: string, analysisData: FileData): Promise<boolean> => {
   try {
+    // Convert columns and rows to JSON-compatible format
+    const columnsJson = JSON.parse(JSON.stringify(analysisData.columns)) as Json;
+    const rowsJson = JSON.parse(JSON.stringify(analysisData.rows)) as Json;
+    
     const { error } = await supabase
       .from('file_data')
       .insert({
         file_id: fileId,
-        columns: analysisData.columns,
-        rows: analysisData.rows,
+        columns: columnsJson,
+        rows: rowsJson,
         total_issues: analysisData.totalIssues,
         quality_score: analysisData.qualityScore
       });
@@ -89,6 +94,63 @@ export const saveFileAnalysis = async (fileId: string, analysisData: FileData): 
     return true;
   } catch (error) {
     console.error('Error in saveFileAnalysis:', error);
+    return false;
+  }
+};
+
+// Get column statistics for a file
+export const getColumnStats = async (fileId: string, columnName: string): Promise<ColumnStats | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('column_stats')
+      .select('*')
+      .eq('file_id', fileId)
+      .eq('column_name', columnName)
+      .single();
+      
+    if (error) {
+      console.error('Error fetching column stats:', error);
+      return null;
+    }
+    
+    return {
+      min: data.min || undefined,
+      max: data.max || undefined,
+      mean: data.mean || undefined,
+      median: data.median || undefined,
+      nullCount: data.null_count,
+      uniqueCount: data.unique_count
+    };
+  } catch (error) {
+    console.error('Error getting column stats:', error);
+    return null;
+  }
+};
+
+// Save column statistics
+export const saveColumnStats = async (fileId: string, columnName: string, stats: ColumnStats): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('column_stats')
+      .insert({
+        file_id: fileId,
+        column_name: columnName,
+        min: stats.min,
+        max: stats.max,
+        mean: stats.mean,
+        median: stats.median,
+        null_count: stats.nullCount,
+        unique_count: stats.uniqueCount
+      });
+      
+    if (error) {
+      console.error('Error saving column stats:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in saveColumnStats:', error);
     return false;
   }
 };
