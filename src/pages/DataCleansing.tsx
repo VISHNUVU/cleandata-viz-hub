@@ -16,7 +16,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useData } from '@/contexts/DataContext';
-import { getFileAnalysis, DataIssue, ColumnStats } from '@/services/fileUploadService';
+import { getFileData, getFileAnalysis, DataIssue, FileData, Column } from '@/services/fileUploadService';
 import { useToast } from '@/hooks/use-toast';
 
 export default function DataCleansing() {

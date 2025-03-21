@@ -14,73 +14,108 @@ export interface UploadedFile {
   metadata?: Record<string, any>;
 }
 
-export interface FileData {
-  columns: string[];
-  rows: any[][];
-  issues?: Issue[];
+export interface Column {
+  name: string;
+  type: string;
+  issues?: DataIssue[];
 }
 
-export interface Issue {
+export interface FileData {
+  columns: Column[];
+  rows: Record<string, any>[];
+  totalIssues: number;
+  qualityScore: number;
+}
+
+export interface DataIssue {
   type: string;
   description: string;
-  rowIndex?: number;
-  columnIndex?: number;
-  value?: string;
-  suggestion?: string;
+  affectedColumn: string;
+  suggestedFix: string;
+}
+
+export interface ColumnStats {
+  min?: number;
+  max?: number;
+  mean?: number;
+  median?: number;
+  nullCount: number;
+  uniqueCount: number;
 }
 
 // Simulate processed data for development
 const mockData: Record<string, FileData> = {
   'mock-data': {
-    columns: ['Date', 'Product ID', 'Region', 'Sales Amount', 'Quantity'],
-    rows: [
-      ['2023-01-15', 'PRD-001', 'North America', '$1,250.00', '5'],
-      ['2023/01/16', 'PRD-002', 'Europe', '1,450.50', '3'],
-      ['2023-01-17', 'prd003', 'asia', '$2,100.75', '8'],
-      ['2023-01-18', 'PRD-004', 'South America', '$950.25', 'N/A']
-    ],
-    issues: [
-      {
-        type: 'format',
-        description: 'Date Format Inconsistency',
-        rowIndex: 1,
-        columnIndex: 0,
-        value: '2023/01/16',
-        suggestion: '2023-01-16'
+    columns: [
+      { 
+        name: 'Date', 
+        type: 'date',
+        issues: [
+          {
+            type: 'format_inconsistency',
+            description: 'Date Format Inconsistency',
+            affectedColumn: 'Date',
+            suggestedFix: 'Standardize dates to YYYY-MM-DD format'
+          }
+        ]
       },
-      {
-        type: 'format',
-        description: 'Missing Currency Symbol',
-        rowIndex: 1,
-        columnIndex: 3,
-        value: '1,450.50',
-        suggestion: '$1,450.50'
+      { 
+        name: 'Product ID', 
+        type: 'string',
+        issues: [
+          {
+            type: 'case_inconsistency',
+            description: 'Capitalization Issues',
+            affectedColumn: 'Product ID',
+            suggestedFix: 'Standardize product IDs with proper formatting (PRD-XXX)'
+          }
+        ]
       },
-      {
-        type: 'case',
-        description: 'Capitalization Issues',
-        rowIndex: 2,
-        columnIndex: 1,
-        value: 'prd003',
-        suggestion: 'PRD-003'
+      { 
+        name: 'Region', 
+        type: 'string',
+        issues: [
+          {
+            type: 'case_inconsistency',
+            description: 'Capitalization Issues',
+            affectedColumn: 'Region',
+            suggestedFix: 'Capitalize all region names consistently'
+          }
+        ]
       },
-      {
-        type: 'case',
-        description: 'Capitalization Issues',
-        rowIndex: 2,
-        columnIndex: 2,
-        value: 'asia',
-        suggestion: 'Asia'
+      { 
+        name: 'Sales Amount', 
+        type: 'currency',
+        issues: [
+          {
+            type: 'format_inconsistency',
+            description: 'Missing Currency Symbol',
+            affectedColumn: 'Sales Amount',
+            suggestedFix: 'Add $ symbol to all currency values'
+          }
+        ]
       },
-      {
-        type: 'value',
-        description: 'Missing Numeric Value',
-        rowIndex: 3,
-        columnIndex: 4,
-        value: 'N/A',
-        suggestion: '0'
+      { 
+        name: 'Quantity', 
+        type: 'number',
+        issues: [
+          {
+            type: 'missing_value',
+            description: 'Missing Numeric Value',
+            affectedColumn: 'Quantity',
+            suggestedFix: 'Replace N/A values with zeros or average value'
+          }
+        ]
       }
-    ]
+    ],
+    rows: [
+      { 'Date': '2023-01-15', 'Product ID': 'PRD-001', 'Region': 'North America', 'Sales Amount': '$1,250.00', 'Quantity': '5' },
+      { 'Date': '2023/01/16', 'Product ID': 'PRD-002', 'Region': 'Europe', 'Sales Amount': '1,450.50', 'Quantity': '3' },
+      { 'Date': '2023-01-17', 'Product ID': 'prd003', 'Region': 'asia', 'Sales Amount': '$2,100.75', 'Quantity': '8' },
+      { 'Date': '2023-01-18', 'Product ID': 'PRD-004', 'Region': 'South America', 'Sales Amount': '$950.25', 'Quantity': 'N/A' }
+    ],
+    totalIssues: 5,
+    qualityScore: 72
   }
 };
 
@@ -122,11 +157,11 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
     };
     
     // Store file record in database
-    const { data: insertedData, error: insertError } = await supabase
+    const insertPromise = supabase
       .from('uploaded_files')
-      .insert(fileRecord)
-      .select()
-      .single();
+      .insert(fileRecord);
+      
+    const { data: insertedData, error: insertError } = await insertPromise;
       
     if (insertError) {
       console.error('Error inserting file record:', insertError);
@@ -136,13 +171,12 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
     
     // Simulate processing - in a real app, this would be a server function
     setTimeout(async () => {
-      const { error: updateError } = await supabase
+      const updatePromise = supabase
         .from('uploaded_files')
-        .update({ status: 'processed' })
-        .eq('id', insertedData.id);
+        .update({ status: 'processed' });
         
-      if (updateError) {
-        console.error('Error updating file status:', updateError);
+      if (insertedData && insertedData.id) {
+        await updatePromise.eq('id', insertedData.id);
       }
     }, 3000);
     
@@ -157,11 +191,12 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
 // Get recent uploads from Supabase
 export const getRecentUploads = async (limit: number = 10): Promise<UploadedFile[]> => {
   try {
-    const { data, error } = await supabase
+    const fetchPromise = supabase
       .from('uploaded_files')
       .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
+      .order('created_at', { ascending: false });
+      
+    const { data, error } = await fetchPromise.limit(limit);
       
     if (error) {
       console.error('Error fetching recent uploads:', error);
@@ -185,6 +220,18 @@ export const getFileData = async (fileId: string): Promise<FileData | null> => {
     return mockData['mock-data'] || null;
   } catch (error) {
     console.error('Error getting file data:', error);
+    return null;
+  }
+};
+
+// Get file analysis for data cleansing
+export const getFileAnalysis = async (fileId: string): Promise<FileData | null> => {
+  try {
+    // In a real app, this would fetch the file analysis from Supabase or an AI service
+    // For now, we'll return mock data
+    return mockData['mock-data'] || null;
+  } catch (error) {
+    console.error('Error getting file analysis:', error);
     return null;
   }
 };
