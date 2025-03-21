@@ -1,41 +1,40 @@
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom"
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "./components/ThemeProvider";
-import MainLayout from "./components/MainLayout";
-import Dashboard from "./pages/Dashboard";
-import DataUpload from "./pages/DataUpload";
-import DataCleansing from "./pages/DataCleansing";
-import Visualization from "./pages/Visualization";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
+import Home from "@/pages/Home"
+import DataUpload from "@/pages/DataUpload"
+import DataCleansing from "@/pages/DataCleansing"
+import MainLayout from "@/components/MainLayout"
+import { ThemeProvider } from "@/components/ThemeProvider"
+import { Toaster } from "@/components/ui/toaster"
+import { DataProvider } from './contexts/DataContext';
 
-const queryClient = new QueryClient();
+function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <MainLayout><Home /></MainLayout>,
+    },
+    {
+      path: "/data-upload",
+      element: <MainLayout><DataUpload /></MainLayout>,
+    },
+    {
+      path: "/data-cleansing",
+      element: <MainLayout><DataCleansing /></MainLayout>,
+    },
+  ])
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark">
-      <TooltipProvider>
+  return (
+    <DataProvider>
+      <ThemeProvider>
         <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<MainLayout><Dashboard /></MainLayout>} />
-            <Route path="/data-upload" element={<MainLayout><DataUpload /></MainLayout>} />
-            <Route path="/data-cleansing" element={<MainLayout><DataCleansing /></MainLayout>} />
-            <Route path="/visualization" element={<MainLayout><Visualization /></MainLayout>} />
-            <Route path="/reports" element={<MainLayout><Reports /></MainLayout>} />
-            <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </DataProvider>
+  );
+}
 
-export default App;
+export default App
