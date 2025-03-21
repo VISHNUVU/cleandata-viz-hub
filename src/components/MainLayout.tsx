@@ -3,7 +3,7 @@ import { useState, ReactNode, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { Menu } from 'lucide-react';
 import { Button } from './ui/button';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -11,7 +11,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   // Close sidebar by default on mobile
   useEffect(() => {
