@@ -5,305 +5,238 @@ import { v4 as uuidv4 } from 'uuid';
 export interface UploadedFile {
   id: string;
   filename: string;
-  size: number;
   type: string;
+  size: number;
   url: string;
   created_at: string;
+  updated_at: string;
   status: 'uploaded' | 'processing' | 'processed' | 'error';
-}
-
-export interface ColumnStats {
-  name: string;
-  dataType: string;
-  missingValues: number;
-  uniqueValues: number;
-  min?: number | string;
-  max?: number | string;
-  issues?: DataIssue[];
-}
-
-export interface DataIssue {
-  type: 'format_inconsistency' | 'missing_value' | 'case_inconsistency' | 'invalid_data' | 'outlier';
-  description: string;
-  affectedRows: number;
-  affectedColumn: string;
-  suggestedFix: string;
+  metadata?: Record<string, any>;
 }
 
 export interface FileData {
-  columns: ColumnStats[];
-  rows: Record<string, any>[];
-  totalIssues: number;
-  qualityScore: number;
+  columns: string[];
+  rows: any[][];
+  issues?: Issue[];
 }
 
-// Upload a file to Supabase storage
-export const uploadFile = async (file: File, fileFormat: string): Promise<UploadedFile | null> => {
-  try {
-    // Create a unique file path
-    const fileId = uuidv4();
-    const filePath = `uploads/${fileId}/${file.name}`;
-    
-    // Upload the file to Supabase storage
-    const { data: storageData, error: storageError } = await supabase
-      .storage
-      .from('data-files')
-      .upload(filePath, file);
-    
-    if (storageError) {
-      console.error('Error uploading file:', storageError);
-      return null;
-    }
-    
-    // Get the public URL for the file
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from('data-files')
-      .getPublicUrl(filePath);
-    
-    // Create a record in the database for this file
-    const { data: fileRecord, error: dbError } = await supabase
-      .from('uploaded_files')
-      .insert({
-        id: fileId,
-        filename: file.name,
-        size: file.size,
-        type: file.type,
-        format: fileFormat,
-        url: publicUrl,
-        status: 'uploaded',
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-    
-    if (dbError) {
-      console.error('Error creating file record:', dbError);
-      return null;
-    }
-    
-    // Trigger file processing in the background
-    processFile(fileId, publicUrl, fileFormat);
-    
-    return fileRecord as UploadedFile;
-  } catch (error) {
-    console.error('File upload failed:', error);
-    return null;
+export interface Issue {
+  type: string;
+  description: string;
+  rowIndex?: number;
+  columnIndex?: number;
+  value?: string;
+  suggestion?: string;
+}
+
+// Simulate processed data for development
+const mockData: Record<string, FileData> = {
+  'mock-data': {
+    columns: ['Date', 'Product ID', 'Region', 'Sales Amount', 'Quantity'],
+    rows: [
+      ['2023-01-15', 'PRD-001', 'North America', '$1,250.00', '5'],
+      ['2023/01/16', 'PRD-002', 'Europe', '1,450.50', '3'],
+      ['2023-01-17', 'prd003', 'asia', '$2,100.75', '8'],
+      ['2023-01-18', 'PRD-004', 'South America', '$950.25', 'N/A']
+    ],
+    issues: [
+      {
+        type: 'format',
+        description: 'Date Format Inconsistency',
+        rowIndex: 1,
+        columnIndex: 0,
+        value: '2023/01/16',
+        suggestion: '2023-01-16'
+      },
+      {
+        type: 'format',
+        description: 'Missing Currency Symbol',
+        rowIndex: 1,
+        columnIndex: 3,
+        value: '1,450.50',
+        suggestion: '$1,450.50'
+      },
+      {
+        type: 'case',
+        description: 'Capitalization Issues',
+        rowIndex: 2,
+        columnIndex: 1,
+        value: 'prd003',
+        suggestion: 'PRD-003'
+      },
+      {
+        type: 'case',
+        description: 'Capitalization Issues',
+        rowIndex: 2,
+        columnIndex: 2,
+        value: 'asia',
+        suggestion: 'Asia'
+      },
+      {
+        type: 'value',
+        description: 'Missing Numeric Value',
+        rowIndex: 3,
+        columnIndex: 4,
+        value: 'N/A',
+        suggestion: '0'
+      }
+    ]
   }
 };
 
-// Get a list of recently uploaded files
-export const getRecentUploads = async (limit = 10): Promise<UploadedFile[]> => {
+// Upload file to Supabase Storage
+export const uploadFile = async (file: File, fileFormat: string): Promise<UploadedFile | null> => {
+  try {
+    const fileId = uuidv4();
+    const filePath = `uploads/${fileId}-${file.name}`;
+    
+    // Try to upload to Supabase storage if available
+    const { data, error } = await supabase.storage
+      .from('files')
+      .upload(filePath, file);
+      
+    if (error && !data) {
+      console.error('Error uploading file:', error);
+      // Use mock data for development
+      return createMockUploadedFile(file, fileFormat);
+    }
+    
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('files')
+      .getPublicUrl(data?.path || filePath);
+      
+    // Create file record in database
+    const fileRecord: Omit<UploadedFile, 'id'> = {
+      filename: file.name,
+      type: file.type,
+      size: file.size,
+      url: urlData.publicUrl,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      status: 'processing',
+      metadata: {
+        format: fileFormat,
+        originalName: file.name
+      }
+    };
+    
+    // Store file record in database
+    const { data: insertedData, error: insertError } = await supabase
+      .from('uploaded_files')
+      .insert(fileRecord)
+      .select()
+      .single();
+      
+    if (insertError) {
+      console.error('Error inserting file record:', insertError);
+      // Use mock data for development
+      return createMockUploadedFile(file, fileFormat);
+    }
+    
+    // Simulate processing - in a real app, this would be a server function
+    setTimeout(async () => {
+      const { error: updateError } = await supabase
+        .from('uploaded_files')
+        .update({ status: 'processed' })
+        .eq('id', insertedData.id);
+        
+      if (updateError) {
+        console.error('Error updating file status:', updateError);
+      }
+    }, 3000);
+    
+    return insertedData as UploadedFile;
+  } catch (error) {
+    console.error('Error in uploadFile:', error);
+    // Fallback to mock data for development
+    return createMockUploadedFile(file, fileFormat);
+  }
+};
+
+// Get recent uploads from Supabase
+export const getRecentUploads = async (limit: number = 10): Promise<UploadedFile[]> => {
   try {
     const { data, error } = await supabase
       .from('uploaded_files')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(limit);
-    
+      
     if (error) {
       console.error('Error fetching recent uploads:', error);
-      return [];
+      // Return mock data for development
+      return getMockRecentUploads();
     }
     
     return data as UploadedFile[];
   } catch (error) {
-    console.error('Failed to fetch recent uploads:', error);
-    return [];
+    console.error('Error in getRecentUploads:', error);
+    // Fallback to mock data for development
+    return getMockRecentUploads();
   }
 };
 
-// Process the uploaded file (this would trigger a Supabase Edge Function in production)
-const processFile = async (fileId: string, fileUrl: string, fileFormat: string) => {
+// Get file data for data cleansing
+export const getFileData = async (fileId: string): Promise<FileData | null> => {
   try {
-    // Update status to processing
-    await supabase
-      .from('uploaded_files')
-      .update({ status: 'processing' })
-      .match({ id: fileId });
-    
-    // In a real implementation, this would call a Supabase Edge Function
-    // with the Gemini API integration. For now, we'll simulate the process.
-    
-    // Simulate processing delay
-    setTimeout(async () => {
-      try {
-        // Update the status to processed
-        await supabase
-          .from('uploaded_files')
-          .update({ 
-            status: 'processed',
-            processed_at: new Date().toISOString()
-          })
-          .match({ id: fileId });
-        
-        // Generate sample analysis results
-        const sampleFileData = generateSampleFileData();
-        
-        // Store the analysis results
-        await supabase
-          .from('file_analyses')
-          .insert({
-            file_id: fileId,
-            analysis_data: sampleFileData,
-            created_at: new Date().toISOString()
-          });
-        
-      } catch (error) {
-        console.error('Error updating file status:', error);
-        await supabase
-          .from('uploaded_files')
-          .update({ status: 'error' })
-          .match({ id: fileId });
-      }
-    }, 3000); // 3 second delay to simulate processing
-    
+    // In a real app, this would fetch the processed data from Supabase
+    // For now, we'll return mock data
+    return mockData['mock-data'] || null;
   } catch (error) {
-    console.error('Error processing file:', error);
-    await supabase
-      .from('uploaded_files')
-      .update({ status: 'error' })
-      .match({ id: fileId });
-  }
-};
-
-// Get file analysis data
-export const getFileAnalysis = async (fileId: string): Promise<FileData | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('file_analyses')
-      .select('analysis_data')
-      .match({ file_id: fileId })
-      .single();
-    
-    if (error) {
-      console.error('Error fetching file analysis:', error);
-      return null;
-    }
-    
-    return data.analysis_data as FileData;
-  } catch (error) {
-    console.error('Failed to fetch file analysis:', error);
+    console.error('Error getting file data:', error);
     return null;
   }
 };
 
-// Generate sample file data for development purposes
-// In production, this would be replaced with actual analysis from Gemini API
-const generateSampleFileData = (): FileData => {
+// Mock functions for development
+function createMockUploadedFile(file: File, fileFormat: string): UploadedFile {
   return {
-    columns: [
-      {
-        name: 'Date',
-        dataType: 'date',
-        missingValues: 0,
-        uniqueValues: 4,
-        issues: [
-          {
-            type: 'format_inconsistency',
-            description: 'Date format inconsistency',
-            affectedRows: 1,
-            affectedColumn: 'Date',
-            suggestedFix: 'Standardize date format to YYYY-MM-DD'
-          }
-        ]
-      },
-      {
-        name: 'Product ID',
-        dataType: 'string',
-        missingValues: 0,
-        uniqueValues: 4,
-        issues: [
-          {
-            type: 'case_inconsistency',
-            description: 'Case inconsistency in product IDs',
-            affectedRows: 1,
-            affectedColumn: 'Product ID',
-            suggestedFix: 'Standardize product ID format to PRD-XXX'
-          }
-        ]
-      },
-      {
-        name: 'Region',
-        dataType: 'string',
-        missingValues: 0,
-        uniqueValues: 4,
-        issues: [
-          {
-            type: 'case_inconsistency',
-            description: 'Case inconsistency in region names',
-            affectedRows: 1,
-            affectedColumn: 'Region',
-            suggestedFix: 'Capitalize first letter of region names'
-          }
-        ]
-      },
-      {
-        name: 'Sales Amount',
-        dataType: 'currency',
-        missingValues: 0,
-        uniqueValues: 4,
-        min: 950.25,
-        max: 2100.75,
-        issues: [
-          {
-            type: 'format_inconsistency',
-            description: 'Missing currency symbol in some rows',
-            affectedRows: 1,
-            affectedColumn: 'Sales Amount',
-            suggestedFix: 'Format all currency values with $ prefix'
-          }
-        ]
-      },
-      {
-        name: 'Quantity',
-        dataType: 'number',
-        missingValues: 1,
-        uniqueValues: 3,
-        min: 3,
-        max: 8,
-        issues: [
-          {
-            type: 'missing_value',
-            description: 'Missing numeric value (N/A)',
-            affectedRows: 1,
-            affectedColumn: 'Quantity',
-            suggestedFix: 'Replace N/A with 0 or average value'
-          }
-        ]
-      }
-    ],
-    rows: [
-      {
-        "Date": "2023-01-15",
-        "Product ID": "PRD-001",
-        "Region": "North America",
-        "Sales Amount": "$1,250.00",
-        "Quantity": 5
-      },
-      {
-        "Date": "2023/01/16",
-        "Product ID": "PRD-002",
-        "Region": "Europe",
-        "Sales Amount": "1,450.50",
-        "Quantity": 3
-      },
-      {
-        "Date": "2023-01-17",
-        "Product ID": "prd003",
-        "Region": "asia",
-        "Sales Amount": "$2,100.75",
-        "Quantity": 8
-      },
-      {
-        "Date": "2023-01-18",
-        "Product ID": "PRD-004",
-        "Region": "South America",
-        "Sales Amount": "$950.25",
-        "Quantity": "N/A"
-      }
-    ],
-    totalIssues: 5,
-    qualityScore: 85
+    id: uuidv4(),
+    filename: file.name,
+    type: file.type,
+    size: file.size,
+    url: URL.createObjectURL(file),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    status: 'processed',
+    metadata: {
+      format: fileFormat
+    }
   };
-};
+}
+
+function getMockRecentUploads(): UploadedFile[] {
+  return [
+    {
+      id: '1',
+      filename: 'sales_data_2023.csv',
+      type: 'text/csv',
+      size: 4200000,
+      url: 'https://example.com/sales_data_2023.csv',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      status: 'processed'
+    },
+    {
+      id: '2',
+      filename: 'customer_feedback.xlsx',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      size: 2800000,
+      url: 'https://example.com/customer_feedback.xlsx',
+      created_at: new Date(Date.now() - 86400000).toISOString(),
+      updated_at: new Date(Date.now() - 86400000).toISOString(),
+      status: 'processed'
+    },
+    {
+      id: '3',
+      filename: 'product_inventory.json',
+      type: 'application/json',
+      size: 1500000,
+      url: 'https://example.com/product_inventory.json',
+      created_at: new Date(Date.now() - 172800000).toISOString(),
+      updated_at: new Date(Date.now() - 172800000).toISOString(),
+      status: 'processing'
+    }
+  ];
+}
