@@ -157,11 +157,9 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
     };
     
     // Store file record in database
-    const insertPromise = supabase
+    const { data: insertedData, error: insertError } = await supabase
       .from('uploaded_files')
       .insert(fileRecord);
-      
-    const { data: insertedData, error: insertError } = await insertPromise;
       
     if (insertError) {
       console.error('Error inserting file record:', insertError);
@@ -170,13 +168,24 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
     }
     
     // Simulate processing - in a real app, this would be a server function
-    setTimeout(async () => {
-      const updatePromise = supabase
+    // Fix: Handle the update operation differently based on the Supabase client type
+    setTimeout(() => {
+      const updateOperation = supabase
         .from('uploaded_files')
         .update({ status: 'processed' });
         
       if (insertedData && insertedData.id) {
-        await updatePromise.eq('id', insertedData.id);
+        // Check if eq method exists (real Supabase client)
+        if (typeof updateOperation.eq === 'function') {
+          updateOperation.eq('id', insertedData.id)
+            .then(() => console.log('File status updated to processed'))
+            .catch(err => console.error('Error updating file status:', err));
+        } else {
+          // For mock client that returns a Promise directly
+          updateOperation
+            .then(() => console.log('File status updated to processed (mock)'))
+            .catch(err => console.error('Error updating file status:', err));
+        }
       }
     }, 3000);
     
@@ -191,20 +200,32 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
 // Get recent uploads from Supabase
 export const getRecentUploads = async (limit: number = 10): Promise<UploadedFile[]> => {
   try {
-    const fetchPromise = supabase
+    const fetchOperation = supabase
       .from('uploaded_files')
       .select('*')
       .order('created_at', { ascending: false });
       
-    const { data, error } = await fetchPromise.limit(limit);
+    // Handle different Supabase client implementations (real vs mock)
+    if (typeof fetchOperation.limit === 'function') {
+      const { data, error } = await fetchOperation.limit(limit);
       
-    if (error) {
-      console.error('Error fetching recent uploads:', error);
-      // Return mock data for development
-      return getMockRecentUploads();
+      if (error) {
+        console.error('Error fetching recent uploads:', error);
+        // Return mock data for development
+        return getMockRecentUploads();
+      }
+      
+      return data as UploadedFile[];
+    } else {
+      // For mock client where fetchOperation is already a Promise
+      try {
+        // For mock implementation, just return mock data
+        return getMockRecentUploads();
+      } catch (error) {
+        console.error('Error in getRecentUploads with mock client:', error);
+        return getMockRecentUploads();
+      }
     }
-    
-    return data as UploadedFile[];
   } catch (error) {
     console.error('Error in getRecentUploads:', error);
     // Fallback to mock data for development

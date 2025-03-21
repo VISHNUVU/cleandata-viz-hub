@@ -26,16 +26,39 @@ function createMockSupabaseClient() {
         })
       })
     },
-    from: (table: string) => ({
-      select: () => ({
-        order: () => ({
-          limit: () => ({
-            then: async () => []
+    from: (table: string) => {
+      // Create a common mock response
+      const mockResponse = async () => ({ 
+        data: table === 'uploaded_files' ? [getMockUploadedFile()] : { id: 'mock-id' }, 
+        error: null 
+      });
+      
+      return {
+        select: () => ({
+          order: () => ({
+            limit: () => mockResponse()
           })
-        })
-      }),
-      insert: async () => ({ data: { id: 'mock-id' }, error: null }),
-      update: async () => ({ data: {}, error: null })
-    })
+        }),
+        insert: async () => ({ data: { id: 'mock-id' }, error: null }),
+        update: async () => ({ data: {}, error: null })
+      };
+    }
+  };
+}
+
+// Helper function for mock data
+function getMockUploadedFile() {
+  return {
+    id: 'mock-file-id',
+    filename: 'mock-file.csv',
+    type: 'text/csv',
+    size: 1024,
+    url: 'https://example.com/mock-file.csv',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    status: 'processed',
+    metadata: {
+      format: 'csv'
+    }
   };
 }
