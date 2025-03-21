@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -175,16 +174,17 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
         .update({ status: 'processed' });
         
       if (insertedData && insertedData.id) {
-        // Check if eq method exists (real Supabase client)
-        if (typeof updateOperation.eq === 'function') {
-          updateOperation.eq('id', insertedData.id)
+        // Check if eq method exists (real Supabase client) by safely testing for its existence
+        if (updateOperation && typeof (updateOperation as any).eq === 'function') {
+          // Use type assertion to handle the eq method
+          ((updateOperation as any).eq('id', insertedData.id))
             .then(() => console.log('File status updated to processed'))
-            .catch(err => console.error('Error updating file status:', err));
+            .catch((err: Error) => console.error('Error updating file status:', err));
         } else {
           // For mock client that returns a Promise directly
-          updateOperation
+          (updateOperation as Promise<any>)
             .then(() => console.log('File status updated to processed (mock)'))
-            .catch(err => console.error('Error updating file status:', err));
+            .catch((err: Error) => console.error('Error updating file status:', err));
         }
       }
     }, 3000);
@@ -206,8 +206,8 @@ export const getRecentUploads = async (limit: number = 10): Promise<UploadedFile
       .order('created_at', { ascending: false });
       
     // Handle different Supabase client implementations (real vs mock)
-    if (typeof fetchOperation.limit === 'function') {
-      const { data, error } = await fetchOperation.limit(limit);
+    if (fetchOperation && typeof (fetchOperation as any).limit === 'function') {
+      const { data, error } = await (fetchOperation as any).limit(limit);
       
       if (error) {
         console.error('Error fetching recent uploads:', error);
@@ -218,13 +218,7 @@ export const getRecentUploads = async (limit: number = 10): Promise<UploadedFile
       return data as UploadedFile[];
     } else {
       // For mock client where fetchOperation is already a Promise
-      try {
-        // For mock implementation, just return mock data
-        return getMockRecentUploads();
-      } catch (error) {
-        console.error('Error in getRecentUploads with mock client:', error);
-        return getMockRecentUploads();
-      }
+      return getMockRecentUploads();
     }
   } catch (error) {
     console.error('Error in getRecentUploads:', error);
