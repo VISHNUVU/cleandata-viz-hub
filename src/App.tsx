@@ -1,61 +1,44 @@
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom"
-
-import Dashboard from "@/pages/Dashboard"
-import DataUpload from "@/pages/DataUpload"
-import DataCleansing from "@/pages/DataCleansing"
-import Visualization from "@/pages/Visualization"
-import Reports from "@/pages/Reports"
-import Settings from "@/pages/Settings"
-import NotFound from "@/pages/NotFound"
-import MainLayout from "@/components/MainLayout"
-import { ThemeProvider } from "@/components/ThemeProvider"
-import { Toaster } from "@/components/ui/toaster"
-import { DataProvider } from './contexts/DataContext';
+import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from '@/components/ThemeProvider'
+import MainLayout from '@/components/MainLayout'
+import Index from '@/pages/Index'
+import Dashboard from '@/pages/Dashboard'
+import DataUpload from '@/pages/DataUpload'
+import DataCleansing from '@/pages/DataCleansing'
+import Visualization from '@/pages/Visualization'
+import Reports from '@/pages/Reports'
+import Settings from '@/pages/Settings'
+import NotFound from '@/pages/NotFound'
+import DashboardBuilder from '@/pages/DashboardBuilder'
+import { DataProvider } from '@/contexts/DataContext'
+import './App.css'
 
 function App() {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <MainLayout><Dashboard /></MainLayout>,
-    },
-    {
-      path: "/data-upload",
-      element: <MainLayout><DataUpload /></MainLayout>,
-    },
-    {
-      path: "/data-cleansing",
-      element: <MainLayout><DataCleansing /></MainLayout>,
-    },
-    {
-      path: "/visualization",
-      element: <MainLayout><Visualization /></MainLayout>,
-    },
-    {
-      path: "/reports",
-      element: <MainLayout><Reports /></MainLayout>,
-    },
-    {
-      path: "/settings",
-      element: <MainLayout><Settings /></MainLayout>,
-    },
-    {
-      path: "*",
-      element: <NotFound />
-    }
-  ])
-
   return (
-    <DataProvider>
-      <ThemeProvider>
+    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+      <DataProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Index />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="data-upload" element={<DataUpload />} />
+              <Route path="data-cleansing" element={<DataCleansing />} />
+              <Route path="visualization" element={<Visualization />} />
+              <Route path="dashboard-builder" element={<DashboardBuilder />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </Router>
         <Toaster />
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </DataProvider>
-  );
+      </DataProvider>
+    </ThemeProvider>
+  )
 }
 
 export default App
