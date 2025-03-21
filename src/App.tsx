@@ -1,11 +1,16 @@
+
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom"
 
-import Home from "@/pages/Home"
+import Dashboard from "@/pages/Dashboard"
 import DataUpload from "@/pages/DataUpload"
 import DataCleansing from "@/pages/DataCleansing"
+import Visualization from "@/pages/Visualization"
+import Reports from "@/pages/Reports"
+import Settings from "@/pages/Settings"
+import NotFound from "@/pages/NotFound"
 import MainLayout from "@/components/MainLayout"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { Toaster } from "@/components/ui/toaster"
@@ -15,7 +20,7 @@ function App() {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <MainLayout><Home /></MainLayout>,
+      element: <MainLayout><Dashboard /></MainLayout>,
     },
     {
       path: "/data-upload",
@@ -25,6 +30,22 @@ function App() {
       path: "/data-cleansing",
       element: <MainLayout><DataCleansing /></MainLayout>,
     },
+    {
+      path: "/visualization",
+      element: <MainLayout><Visualization /></MainLayout>,
+    },
+    {
+      path: "/reports",
+      element: <MainLayout><Reports /></MainLayout>,
+    },
+    {
+      path: "/settings",
+      element: <MainLayout><Settings /></MainLayout>,
+    },
+    {
+      path: "*",
+      element: <NotFound />
+    }
   ])
 
   return (
