@@ -1,6 +1,5 @@
-
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { UploadedFile, FileData } from '@/services/fileUploadService';
+import { UploadedFile, FileData } from '@/types/file';
 
 interface DataContextType {
   selectedFile: UploadedFile | null;

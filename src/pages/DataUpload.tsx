@@ -26,7 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { uploadFile, getRecentUploads, UploadedFile } from '@/services/fileUploadService';
+import { uploadFile, getRecentUploads, UploadedFile } from '@/services';
 import { useData } from '@/contexts/DataContext';
 import { formatDistanceToNow } from 'date-fns';
 
