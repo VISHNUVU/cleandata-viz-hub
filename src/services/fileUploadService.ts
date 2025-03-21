@@ -1,8 +1,8 @@
 
-import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
-import { UploadedFile, FileData } from '@/types/file';
-import { createMockUploadedFile, getMockRecentUploads, getMockFileData } from './mockDataService';
+import { UploadedFile } from '@/types/file';
+import { createMockUploadedFile } from './mockDataService';
+import { supabase } from '@/integrations/supabase/client';
 
 // Upload file to Supabase Storage
 export const uploadFile = async (file: File, fileFormat: string): Promise<UploadedFile | null> => {
@@ -10,14 +10,13 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
     const fileId = uuidv4();
     const filePath = `uploads/${fileId}-${file.name}`;
     
-    // Try to upload to Supabase storage if available
+    // Upload to Supabase storage
     const { data, error } = await supabase.storage
       .from('files')
       .upload(filePath, file);
       
-    if (error && !data) {
+    if (error) {
       console.error('Error uploading file:', error);
-      // Use mock data for development
       return createMockUploadedFile(file, fileFormat);
     }
     
@@ -27,7 +26,7 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
       .getPublicUrl(data?.path || filePath);
       
     // Create file record in database
-    const fileRecord: Omit<UploadedFile, 'id'> = {
+    const fileRecord = {
       filename: file.name,
       type: file.type,
       size: file.size,
@@ -44,41 +43,26 @@ export const uploadFile = async (file: File, fileFormat: string): Promise<Upload
     // Store file record in database
     const { data: insertedData, error: insertError } = await supabase
       .from('uploaded_files')
-      .insert(fileRecord);
+      .insert(fileRecord)
+      .select('*')
+      .single();
       
     if (insertError) {
       console.error('Error inserting file record:', insertError);
-      // Use mock data for development
       return createMockUploadedFile(file, fileFormat);
     }
     
     // Simulate processing - in a real app, this would be a server function
-    // Fix: Handle the update operation differently based on the Supabase client type
-    setTimeout(() => {
-      const updateOperation = supabase
+    setTimeout(async () => {
+      await supabase
         .from('uploaded_files')
-        .update({ status: 'processed' });
-        
-      if (insertedData && insertedData.id) {
-        // Check if eq method exists (real Supabase client) by safely testing for its existence
-        if (updateOperation && typeof (updateOperation as any).eq === 'function') {
-          // Use type assertion to handle the eq method
-          ((updateOperation as any).eq('id', insertedData.id))
-            .then(() => console.log('File status updated to processed'))
-            .catch((err: Error) => console.error('Error updating file status:', err));
-        } else {
-          // For mock client that returns a Promise directly
-          (updateOperation as Promise<any>)
-            .then(() => console.log('File status updated to processed (mock)'))
-            .catch((err: Error) => console.error('Error updating file status:', err));
-        }
-      }
+        .update({ status: 'processed' })
+        .eq('id', insertedData.id);
     }, 3000);
     
-    return insertedData as UploadedFile;
+    return insertedData as unknown as UploadedFile;
   } catch (error) {
     console.error('Error in uploadFile:', error);
-    // Fallback to mock data for development
     return createMockUploadedFile(file, fileFormat);
   }
 };

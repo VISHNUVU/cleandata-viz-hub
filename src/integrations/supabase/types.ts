@@ -9,7 +9,168 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      column_stats: {
+        Row: {
+          column_name: string
+          created_at: string
+          file_id: string
+          id: string
+          max: number | null
+          mean: number | null
+          median: number | null
+          min: number | null
+          null_count: number
+          unique_count: number
+        }
+        Insert: {
+          column_name: string
+          created_at?: string
+          file_id: string
+          id?: string
+          max?: number | null
+          mean?: number | null
+          median?: number | null
+          min?: number | null
+          null_count?: number
+          unique_count?: number
+        }
+        Update: {
+          column_name?: string
+          created_at?: string
+          file_id?: string
+          id?: string
+          max?: number | null
+          mean?: number | null
+          median?: number | null
+          min?: number | null
+          null_count?: number
+          unique_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "column_stats_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_issues: {
+        Row: {
+          affected_column: string
+          created_at: string
+          description: string
+          file_id: string
+          id: string
+          suggested_fix: string
+          type: string
+        }
+        Insert: {
+          affected_column: string
+          created_at?: string
+          description: string
+          file_id: string
+          id?: string
+          suggested_fix: string
+          type: string
+        }
+        Update: {
+          affected_column?: string
+          created_at?: string
+          description?: string
+          file_id?: string
+          id?: string
+          suggested_fix?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_issues_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_data: {
+        Row: {
+          columns: Json
+          created_at: string
+          file_id: string
+          id: string
+          quality_score: number
+          rows: Json
+          total_issues: number
+          updated_at: string
+        }
+        Insert: {
+          columns: Json
+          created_at?: string
+          file_id: string
+          id?: string
+          quality_score?: number
+          rows: Json
+          total_issues?: number
+          updated_at?: string
+        }
+        Update: {
+          columns?: Json
+          created_at?: string
+          file_id?: string
+          id?: string
+          quality_score?: number
+          rows?: Json
+          total_issues?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_data_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "uploaded_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uploaded_files: {
+        Row: {
+          created_at: string
+          filename: string
+          id: string
+          metadata: Json | null
+          size: number
+          status: string
+          type: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          filename: string
+          id?: string
+          metadata?: Json | null
+          size: number
+          status: string
+          type: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          filename?: string
+          id?: string
+          metadata?: Json | null
+          size?: number
+          status?: string
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

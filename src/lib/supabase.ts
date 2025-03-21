@@ -1,64 +1,15 @@
 
-import { createClient } from '@supabase/supabase-js';
+// We no longer need this file as we're using the official Supabase client
+// This file is kept for backwards compatibility
+// Import from '@/integrations/supabase/client' instead
 
-// Check if the Supabase URL and key are provided
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
+import { getMockRecentUploads } from '@/services/mockDataService';
 
-// Create a mock supabase client when credentials are not available
-export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : createMockSupabaseClient();
+// Export the official client
+export const supabase = supabaseClient;
 
-// Simple mock implementation for local development
-function createMockSupabaseClient() {
-  console.log('Using mock Supabase client. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
-  
-  return {
-    storage: {
-      from: (bucket: string) => ({
-        upload: async (path: string, file: File) => ({
-          data: { path: `mock/${path}` },
-          error: null
-        }),
-        getPublicUrl: (path: string) => ({
-          data: { publicUrl: `https://example.com/${bucket}/${path}` }
-        })
-      })
-    },
-    from: (table: string) => {
-      // Create a common mock response
-      const mockResponse = async () => ({ 
-        data: table === 'uploaded_files' ? [getMockUploadedFile()] : { id: 'mock-id' }, 
-        error: null 
-      });
-      
-      return {
-        select: () => ({
-          order: () => ({
-            limit: () => mockResponse()
-          })
-        }),
-        insert: async () => ({ data: { id: 'mock-id' }, error: null }),
-        update: async () => ({ data: {}, error: null })
-      };
-    }
-  };
-}
-
-// Helper function for mock data
-function getMockUploadedFile() {
-  return {
-    id: 'mock-file-id',
-    filename: 'mock-file.csv',
-    type: 'text/csv',
-    size: 1024,
-    url: 'https://example.com/mock-file.csv',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    status: 'processed',
-    metadata: {
-      format: 'csv'
-    }
-  };
+// For backwards compatibility
+export function getMockUploadedFile() {
+  return getMockRecentUploads()[0];
 }
