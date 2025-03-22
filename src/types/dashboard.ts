@@ -26,6 +26,16 @@ export interface ChartConfig {
   prefix?: string; 
   suffix?: string;
   aggregation?: "sum" | "average" | "count" | "max" | "min";
+  
+  // Styling properties
+  colorScheme?: number;
+  curveType?: string;
+  showGrid?: boolean;
+  
+  // Filtering properties
+  filterField?: string;
+  filterOperator?: string;
+  filterValue?: string;
 }
 
 // Define dashboard type
@@ -35,4 +45,14 @@ export interface Dashboard {
   description?: string;
   charts: ChartConfig[];
   layout?: any;
+  templateId?: string;
+}
+
+// Dashboard templates
+export interface DashboardTemplate {
+  id: string;
+  name: string;
+  description: string;
+  thumbnail?: string;
+  charts: Partial<ChartConfig>[];
 }

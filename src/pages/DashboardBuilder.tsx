@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,10 +6,10 @@ import { UploadedFile } from "@/types/file";
 import { useToast } from "@/hooks/use-toast";
 import { getRecentUploads } from "@/services/fileDataService";
 import { v4 as uuidv4 } from "uuid";
-import { Plus } from "lucide-react";
+import { Plus, LayoutTemplate } from "lucide-react";
 
 // Import types from our types file
-import { ChartConfig, ChartType, Dashboard } from "@/types/dashboard";
+import { ChartConfig, ChartType, Dashboard, DashboardTemplate } from "@/types/dashboard";
 
 // Import our components
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -16,6 +17,7 @@ import DashboardGrid from "@/components/dashboard/DashboardGrid";
 import ChartConfigPanelContainer from "@/components/dashboard/ChartConfigPanelContainer";
 import ChartCreationModal from "@/components/dashboard/ChartCreationModal";
 import EmptyDashboard from "@/components/dashboard/EmptyDashboard";
+import DashboardTemplates from "@/components/dashboard/DashboardTemplates";
 
 // Re-export types with proper syntax for isolatedModules
 export type { ChartType, Dashboard, ChartConfig };
@@ -232,6 +234,47 @@ export default function DashboardBuilder() {
     });
   };
 
+  // Apply a dashboard template
+  const handleApplyTemplate = (template: DashboardTemplate) => {
+    if (!activeDashboard || !template) return;
+
+    // Generate complete chart configs from template partial configs
+    const templateCharts: ChartConfig[] = template.charts.map(chartTemplate => {
+      return {
+        id: uuidv4(),
+        title: chartTemplate.title || "Untitled Chart",
+        type: chartTemplate.type || "bar",
+        position: chartTemplate.position || { x: 0, y: 0, w: 6, h: 4 },
+        dataSource: chartTemplate.dataSource || (availableDataSources[0]?.id || ""),
+        dimensions: chartTemplate.dimensions || [],
+        measures: chartTemplate.measures || [],
+        prefix: chartTemplate.prefix,
+        suffix: chartTemplate.suffix
+      } as ChartConfig;
+    });
+
+    // Apply the template to the active dashboard
+    const updatedDashboard = {
+      ...activeDashboard,
+      title: template.name,
+      description: template.description,
+      charts: templateCharts,
+      templateId: template.id
+    };
+
+    setDashboards(
+      dashboards.map(d => d.id === activeDashboard.id ? updatedDashboard : d)
+    );
+    setActiveDashboard(updatedDashboard);
+    setDashboardTitle(template.name);
+    setDashboardDescription(template.description);
+
+    toast({
+      title: "Template Applied",
+      description: `${template.name} template has been applied to your dashboard.`
+    });
+  };
+
   // Handle layout changes
   const handleLayoutChange = (layout: any) => {
     if (!activeDashboard) return;
@@ -322,13 +365,16 @@ export default function DashboardBuilder() {
 
         {/* Dashboard Content */}
         <div className="grid grid-cols-1 gap-6">
-          <div className="flex justify-end">
+          <div className="flex justify-end space-x-3">
+            <DashboardTemplates onSelectTemplate={handleApplyTemplate} />
+            
             <ChartCreationModal
               open={isCreatingChart}
               onOpenChange={setIsCreatingChart}
               onCreateChart={handleCreateChart}
               dataSources={availableDataSources}
             />
+            
             <Button onClick={() => setIsCreatingChart(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Chart
@@ -363,4 +409,4 @@ export default function DashboardBuilder() {
       </div>
     </div>
   );
-}
+};

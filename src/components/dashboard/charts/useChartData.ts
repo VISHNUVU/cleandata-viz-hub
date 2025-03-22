@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { ChartConfig } from "@/pages/DashboardBuilder";
+import { ChartConfig } from "@/types/dashboard";
 import { getFileData } from "@/services/fileDataService";
 import { getMockFileData } from "@/services/mockDataService";
 import { getSampleData } from "./ChartUtils";
@@ -22,11 +22,36 @@ export function useChartData(config: ChartConfig) {
         const fileData = await getFileData(config.dataSource);
         
         if (fileData && fileData.rows) {
-          setData(fileData.rows);
+          let processedData = [...fileData.rows];
+          
+          // Apply filtering if filter options are specified
+          if (config.filterField && config.filterOperator && config.filterValue !== undefined) {
+            processedData = processedData.filter(row => {
+              const fieldValue = row[config.filterField || ""];
+              const filterValue = config.filterValue;
+              
+              switch (config.filterOperator) {
+                case "equals":
+                  return fieldValue == filterValue; // Using loose equality for string/number comparison
+                case "not-equals":
+                  return fieldValue != filterValue;
+                case "greater-than":
+                  return Number(fieldValue) > Number(filterValue);
+                case "less-than":
+                  return Number(fieldValue) < Number(filterValue);
+                case "contains":
+                  return String(fieldValue).toLowerCase().includes(String(filterValue).toLowerCase());
+                default:
+                  return true;
+              }
+            });
+          }
+          
+          setData(processedData);
           
           // Calculate aggregated value for card type
           if (config.type === "card" && config.y) {
-            const values = fileData.rows.map((row: any) => Number(row[config.y || ""]));
+            const values = processedData.map((row: any) => Number(row[config.y || ""]));
             const validValues = values.filter((value: number) => !isNaN(value));
             
             if (validValues.length > 0) {
@@ -81,7 +106,7 @@ export function useChartData(config: ChartConfig) {
     };
 
     fetchData();
-  }, [config.dataSource, config.type, config.y, config.aggregation]);
+  }, [config.dataSource, config.type, config.y, config.aggregation, config.filterField, config.filterOperator, config.filterValue]);
 
   return { data, isLoading, error, aggregatedValue, previousValue };
 }

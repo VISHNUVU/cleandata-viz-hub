@@ -13,6 +13,20 @@ export const CHART_COLORS = [
   "#F97316"  // orange-500
 ];
 
+// Predefined color schemes
+export const COLOR_SCHEMES = {
+  // Indigo blues
+  indigo: ["#4F46E5", "#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE"],
+  // Reds to oranges
+  firefly: ["#EF4444", "#F59E0B", "#F97316", "#FB923C", "#FEB273"],
+  // Blues to greens
+  ocean: ["#0EA5E9", "#22D3EE", "#2DD4BF", "#10B981", "#34D399"],
+  // Purples to pinks
+  twilight: ["#8B5CF6", "#A78BFA", "#C084FC", "#E879F9", "#F472B6"],
+  // Greens to yellows
+  forest: ["#22C55E", "#84CC16", "#BEF264", "#FDE047", "#FACC15"]
+};
+
 // Helper function to generate sample data for different chart types
 export function getSampleData(chartType: string): any[] {
   switch (chartType) {
@@ -68,4 +82,33 @@ export const formatValue = (value: number | null) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2
   });
+};
+
+// Get color palette based on selected scheme
+export const getColorPalette = (colorScheme?: number) => {
+  if (colorScheme === undefined || colorScheme < 0 || colorScheme >= CHART_COLORS.length) {
+    return CHART_COLORS; // Default
+  }
+  
+  // Starting from the selected color, create a palette
+  const baseColor = CHART_COLORS[colorScheme];
+  const palette = [baseColor];
+  
+  // Add variations by cycling through the other colors
+  for (let i = 1; i < 5; i++) {
+    palette.push(CHART_COLORS[(colorScheme + i) % CHART_COLORS.length]);
+  }
+  
+  return palette;
+};
+
+// Format percent for display
+export const formatPercent = (value: number) => {
+  return `${value.toFixed(1)}%`;
+};
+
+// Calculate percent change
+export const calculatePercentChange = (current: number, previous: number) => {
+  if (previous === 0) return 0;
+  return ((current - previous) / Math.abs(previous)) * 100;
 };

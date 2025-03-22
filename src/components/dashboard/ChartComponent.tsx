@@ -1,5 +1,5 @@
 
-import { ChartConfig } from "@/pages/DashboardBuilder";
+import { ChartConfig } from "@/types/dashboard";
 import { useChartData } from "./charts/useChartData";
 import CardChart from "./charts/CardChart";
 import BarChartComponent from "./charts/BarChart";
@@ -7,6 +7,7 @@ import LineChartComponent from "./charts/LineChart";
 import PieChartComponent from "./charts/PieChart";
 import AreaChartComponent from "./charts/AreaChart";
 import ScatterChartComponent from "./charts/ScatterChart";
+import { getColorPalette } from "./charts/ChartUtils";
 
 interface ChartComponentProps {
   config: ChartConfig;
@@ -14,6 +15,9 @@ interface ChartComponentProps {
 
 const ChartComponent = ({ config }: ChartComponentProps) => {
   const { data, isLoading, error, aggregatedValue, previousValue } = useChartData(config);
+
+  // Get color palette based on the config
+  const colors = getColorPalette(config.colorScheme);
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-full">Loading chart data...</div>;
@@ -38,25 +42,32 @@ const ChartComponent = ({ config }: ChartComponentProps) => {
     );
   }
 
+  // Common props for all charts
+  const chartProps = {
+    config,
+    data,
+    colors
+  };
+
   // Render appropriate chart based on type
   switch (config.type) {
     case "bar":
-      return <BarChartComponent config={config} data={data} />;
+      return <BarChartComponent {...chartProps} />;
       
     case "line":
-      return <LineChartComponent config={config} data={data} />;
+      return <LineChartComponent {...chartProps} />;
       
     case "pie":
-      return <PieChartComponent config={config} data={data} />;
+      return <PieChartComponent {...chartProps} />;
       
     case "area":
-      return <AreaChartComponent config={config} data={data} />;
+      return <AreaChartComponent {...chartProps} />;
       
     case "scatter":
-      return <ScatterChartComponent config={config} data={data} />;
+      return <ScatterChartComponent {...chartProps} />;
       
     case "donut":
-      return <PieChartComponent config={config} data={data} isDonut={true} />;
+      return <PieChartComponent {...chartProps} isDonut={true} />;
       
     default:
       return <div>Unsupported chart type: {config.type}</div>;
