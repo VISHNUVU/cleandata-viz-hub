@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,17 +7,18 @@ import { getRecentUploads } from "@/services/fileDataService";
 import { v4 as uuidv4 } from "uuid";
 import { Plus } from "lucide-react";
 
-// Import types from our new types file
+// Import types from our types file
 import { ChartConfig, ChartType, Dashboard } from "@/types/dashboard";
 
-// Import our new components
+// Import our components
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardGrid from "@/components/dashboard/DashboardGrid";
-import ChartConfigPanel from "@/components/dashboard/ChartConfigPanel";
+import ChartConfigPanelContainer from "@/components/dashboard/ChartConfigPanelContainer";
 import ChartCreationModal from "@/components/dashboard/ChartCreationModal";
 import EmptyDashboard from "@/components/dashboard/EmptyDashboard";
 
-export { ChartType, Dashboard, ChartConfig };
+// Re-export types with proper syntax for isolatedModules
+export type { ChartType, Dashboard, ChartConfig };
 
 export default function DashboardBuilder() {
   const { toast } = useToast();
@@ -158,7 +158,6 @@ export default function DashboardBuilder() {
 
   // Save the dashboard
   const handleSaveDashboard = () => {
-    // In a real application, this would persist the dashboard to a database
     toast({
       title: "Dashboard Saved",
       description: "Your dashboard has been saved successfully."
@@ -167,7 +166,6 @@ export default function DashboardBuilder() {
 
   // Export the dashboard
   const handleExportDashboard = () => {
-    // In a real application, this would export the dashboard to a file
     try {
       const dashboardData = JSON.stringify(activeDashboard, null, 2);
       const blob = new Blob([dashboardData], { type: 'application/json' });
@@ -196,10 +194,8 @@ export default function DashboardBuilder() {
 
   // Share the dashboard
   const handleShareDashboard = () => {
-    // In a real application, this would generate a shareable link
     const mockShareableLink = `https://example.com/dashboards/${activeDashboard?.id}`;
     
-    // Copy to clipboard
     navigator.clipboard.writeText(mockShareableLink)
       .then(() => {
         toast({
@@ -278,7 +274,7 @@ export default function DashboardBuilder() {
       title: `${chart.title} (Copy)`,
       position: {
         ...chart.position,
-        x: (chart.position.x + 2) % 12, // Adjust position to avoid complete overlap
+        x: (chart.position.x + 2) % 12,
         y: chart.position.y + 1
       }
     };
@@ -357,14 +353,12 @@ export default function DashboardBuilder() {
 
         {/* Chart Configuration Panel */}
         {selectedChart && (
-          <Card className="mt-6 p-6">
-            <ChartConfigPanel
-              chart={selectedChart}
-              dataSources={availableDataSources}
-              onUpdateChart={handleUpdateChart}
-              onClose={() => setSelectedChart(null)}
-            />
-          </Card>
+          <ChartConfigPanelContainer
+            chart={selectedChart}
+            dataSources={availableDataSources}
+            onUpdateChart={handleUpdateChart}
+            onClose={() => setSelectedChart(null)}
+          />
         )}
       </div>
     </div>
