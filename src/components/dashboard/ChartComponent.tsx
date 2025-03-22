@@ -22,6 +22,8 @@ import {
 import { ChartConfig } from "@/pages/DashboardBuilder";
 import { getMockFileData } from "@/services/mockDataService";
 import { getFileData } from "@/services/fileDataService";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 
 interface ChartComponentProps {
   config: ChartConfig;
@@ -45,6 +47,8 @@ const ChartComponent = ({ config }: ChartComponentProps) => {
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aggregatedValue, setAggregatedValue] = useState<number | null>(null);
+  const [previousValue, setPreviousValue] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +61,37 @@ const ChartComponent = ({ config }: ChartComponentProps) => {
         
         if (fileData && fileData.rows) {
           setData(fileData.rows);
+          
+          // Calculate aggregated value for card type
+          if (config.type === "card" && config.y) {
+            const values = fileData.rows.map((row: any) => Number(row[config.y || ""]));
+            const validValues = values.filter((value: number) => !isNaN(value));
+            
+            if (validValues.length > 0) {
+              // Calculate current value (usually the sum or average)
+              let currentValue = 0;
+              if (config.aggregation === "sum") {
+                currentValue = validValues.reduce((acc: number, val: number) => acc + val, 0);
+              } else if (config.aggregation === "average") {
+                currentValue = validValues.reduce((acc: number, val: number) => acc + val, 0) / validValues.length;
+              } else if (config.aggregation === "max") {
+                currentValue = Math.max(...validValues);
+              } else if (config.aggregation === "min") {
+                currentValue = Math.min(...validValues);
+              } else if (config.aggregation === "count") {
+                currentValue = validValues.length;
+              } else {
+                // Default to sum
+                currentValue = validValues.reduce((acc: number, val: number) => acc + val, 0);
+              }
+              
+              setAggregatedValue(currentValue);
+              
+              // Set a mock previous value for comparison
+              // In a real app, this would come from historical data
+              setPreviousValue(currentValue * (Math.random() * (1.2 - 0.8) + 0.8));
+            }
+          }
         } else {
           // Fallback to mock data for demo purposes
           const mockData = await getMockFileData(config.dataSource);
@@ -72,13 +107,19 @@ const ChartComponent = ({ config }: ChartComponentProps) => {
         
         // Use sample data for development purposes
         setData(getSampleData(config.type));
+        
+        // For cards, set some sample aggregated data
+        if (config.type === "card") {
+          setAggregatedValue(Math.round(Math.random() * 10000));
+          setPreviousValue(Math.round(Math.random() * 10000));
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [config.dataSource, config.type]);
+  }, [config.dataSource, config.type, config.y, config.aggregation]);
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-full">Loading chart data...</div>;
@@ -90,6 +131,59 @@ const ChartComponent = ({ config }: ChartComponentProps) => {
 
   if (!data || data.length === 0) {
     return <div className="flex items-center justify-center h-full">No data available</div>;
+  }
+
+  // Card visualization for metrics
+  if (config.type === "card") {
+    const percentChange = previousValue && aggregatedValue 
+      ? ((aggregatedValue - previousValue) / previousValue) * 100 
+      : 0;
+    
+    const formatValue = (value: number | null) => {
+      if (value === null) return "N/A";
+      
+      // Format based on the value magnitude
+      if (Math.abs(value) >= 1000000) {
+        return `${(value / 1000000).toFixed(1)}M`;
+      } else if (Math.abs(value) >= 1000) {
+        return `${(value / 1000).toFixed(1)}K`;
+      }
+      
+      return value.toLocaleString(undefined, { 
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      });
+    };
+    
+    return (
+      <Card className="w-full h-full">
+        <CardHeader className="p-4 pb-0">
+          <CardTitle className="text-base font-medium">{config.cardTitle || config.title}</CardTitle>
+          <CardDescription>{config.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="flex flex-col space-y-1">
+            <span className="text-3xl font-bold">
+              {config.prefix || ""}{formatValue(aggregatedValue)}{config.suffix || ""}
+            </span>
+            {percentChange !== null && (
+              <div className="flex items-center">
+                <span className={`text-sm font-medium flex items-center ${percentChange > 0 ? 'text-green-500' : percentChange < 0 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {percentChange > 0 ? (
+                    <ArrowUp className="h-4 w-4 mr-1" />
+                  ) : percentChange < 0 ? (
+                    <ArrowDown className="h-4 w-4 mr-1" />
+                  ) : (
+                    <Minus className="h-4 w-4 mr-1" />
+                  )}
+                  {Math.abs(percentChange).toFixed(1)}% from previous
+                </span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   // Render appropriate chart based on type
@@ -299,6 +393,11 @@ function getSampleData(chartType: string): any[] {
         { x: 50, y: 10, z: 250 }
       ];
     
+    case "card":
+      return [
+        { value: 1250 }
+      ];
+      
     default:
       return [
         { name: "Jan", value: 400, category: "A" },

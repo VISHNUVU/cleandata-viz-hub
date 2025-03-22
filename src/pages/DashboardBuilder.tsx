@@ -30,11 +30,12 @@ import {
   Trash2,
   Settings,
   MoreHorizontal,
-  Edit3
+  Edit3,
+  CreditCard
 } from "lucide-react";
 
 // Define chart types
-export type ChartType = "bar" | "line" | "pie" | "area" | "scatter" | "donut";
+export type ChartType = "bar" | "line" | "pie" | "area" | "scatter" | "donut" | "card";
 
 // Define chart configuration type
 export interface ChartConfig {
@@ -55,6 +56,11 @@ export interface ChartConfig {
     w: number;
     h: number;
   };
+  // Card specific properties
+  cardTitle?: string;
+  prefix?: string; 
+  suffix?: string;
+  aggregation?: "sum" | "average" | "count" | "max" | "min";
 }
 
 // Define dashboard type
@@ -77,7 +83,8 @@ export default function DashboardBuilder() {
     type: "bar",
     dataSource: "",
     dimensions: [],
-    measures: []
+    measures: [],
+    aggregation: "sum"
   });
   const [availableDataSources, setAvailableDataSources] = useState<UploadedFile[]>([]);
   const [dashboardTitle, setDashboardTitle] = useState("My Dashboard");
@@ -130,6 +137,18 @@ export default function DashboardBuilder() {
       return;
     }
 
+    // Set default height/width based on chart type
+    let defaultWidth = 6;
+    let defaultHeight = 4;
+    
+    if (newChartConfig.type === "card") {
+      defaultWidth = 3;
+      defaultHeight = 2;
+    } else if (newChartConfig.type === "pie" || newChartConfig.type === "donut") {
+      defaultWidth = 4;
+      defaultHeight = 4;
+    }
+
     const chart: ChartConfig = {
       id: uuidv4(),
       title: newChartConfig.title || "New Chart",
@@ -143,9 +162,10 @@ export default function DashboardBuilder() {
       position: {
         x: Math.floor(Math.random() * 6) * 2,
         y: Math.floor(Math.random() * 4) * 2,
-        w: 6,
-        h: 4
-      }
+        w: defaultWidth,
+        h: defaultHeight
+      },
+      aggregation: newChartConfig.aggregation || "sum"
     };
 
     const updatedDashboard = {
@@ -163,7 +183,8 @@ export default function DashboardBuilder() {
       type: "bar",
       dataSource: "",
       dimensions: [],
-      measures: []
+      measures: [],
+      aggregation: "sum"
     });
 
     toast({
@@ -246,6 +267,7 @@ export default function DashboardBuilder() {
 
   // Save the dashboard
   const handleSaveDashboard = () => {
+    // In a real application, this would persist the dashboard to a database
     toast({
       title: "Dashboard Saved",
       description: "Your dashboard has been saved successfully."
@@ -254,18 +276,53 @@ export default function DashboardBuilder() {
 
   // Export the dashboard
   const handleExportDashboard = () => {
-    toast({
-      title: "Dashboard Exported",
-      description: "Your dashboard has been exported."
-    });
+    // In a real application, this would export the dashboard to a file
+    try {
+      const dashboardData = JSON.stringify(activeDashboard, null, 2);
+      const blob = new Blob([dashboardData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${activeDashboard?.title || 'dashboard'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Dashboard Exported",
+        description: "Your dashboard has been exported as JSON."
+      });
+    } catch (error) {
+      console.error("Error exporting dashboard:", error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error exporting your dashboard.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Share the dashboard
   const handleShareDashboard = () => {
-    toast({
-      title: "Dashboard Shared",
-      description: "Your dashboard sharing link has been created."
-    });
+    // In a real application, this would generate a shareable link
+    const mockShareableLink = `https://example.com/dashboards/${activeDashboard?.id}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(mockShareableLink)
+      .then(() => {
+        toast({
+          title: "Dashboard Shared",
+          description: "Shareable link copied to clipboard."
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Sharing Failed",
+          description: "Could not copy the sharing link to clipboard.",
+          variant: "destructive"
+        });
+      });
   };
 
   // Create new dashboard
@@ -326,8 +383,40 @@ export default function DashboardBuilder() {
       case "line": return <LineChart className="h-4 w-4" />;
       case "pie": return <PieChart className="h-4 w-4" />;
       case "area": return <AreaChart className="h-4 w-4" />;
+      case "card": return <CreditCard className="h-4 w-4" />;
       default: return <BarChart2 className="h-4 w-4" />;
     }
+  };
+
+  // Function to duplicate a chart
+  const handleDuplicateChart = (chart: ChartConfig) => {
+    if (!activeDashboard) return;
+    
+    const duplicatedChart = {
+      ...chart,
+      id: uuidv4(),
+      title: `${chart.title} (Copy)`,
+      position: {
+        ...chart.position,
+        x: (chart.position.x + 2) % 12, // Adjust position to avoid complete overlap
+        y: chart.position.y + 1
+      }
+    };
+    
+    const updatedDashboard = {
+      ...activeDashboard,
+      charts: [...activeDashboard.charts, duplicatedChart]
+    };
+    
+    setDashboards(
+      dashboards.map(d => d.id === activeDashboard.id ? updatedDashboard : d)
+    );
+    setActiveDashboard(updatedDashboard);
+    
+    toast({
+      title: "Success",
+      description: "Chart duplicated successfully.",
+    });
   };
 
   return (
@@ -444,7 +533,8 @@ export default function DashboardBuilder() {
                     type: "bar",
                     dataSource: "",
                     dimensions: [],
-                    measures: []
+                    measures: [],
+                    aggregation: "sum"
                   });
                 }
               }}
@@ -492,6 +582,7 @@ export default function DashboardBuilder() {
                         <SelectItem value="area">Area Chart</SelectItem>
                         <SelectItem value="scatter">Scatter Plot</SelectItem>
                         <SelectItem value="donut">Donut Chart</SelectItem>
+                        <SelectItem value="card">Card/Metric</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -507,6 +598,70 @@ export default function DashboardBuilder() {
                       />
                     </div>
                   </div>
+                  
+                  {newChartConfig.type === 'card' && (
+                    <>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="card-metric" className="text-right">
+                          Metric Field
+                        </Label>
+                        <Input
+                          id="card-metric"
+                          value={newChartConfig.y || ""}
+                          onChange={(e) => setNewChartConfig({...newChartConfig, y: e.target.value})}
+                          className="col-span-3"
+                          placeholder="Column name for metric value"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="aggregation" className="text-right">
+                          Aggregation
+                        </Label>
+                        <Select 
+                          value={newChartConfig.aggregation} 
+                          onValueChange={(value) => setNewChartConfig({
+                            ...newChartConfig, 
+                            aggregation: value as "sum" | "average" | "count" | "max" | "min"
+                          })}
+                        >
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select aggregation" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="sum">Sum</SelectItem>
+                            <SelectItem value="average">Average</SelectItem>
+                            <SelectItem value="count">Count</SelectItem>
+                            <SelectItem value="max">Maximum</SelectItem>
+                            <SelectItem value="min">Minimum</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="prefix" className="text-right">
+                          Prefix
+                        </Label>
+                        <Input
+                          id="prefix"
+                          value={newChartConfig.prefix || ""}
+                          onChange={(e) => setNewChartConfig({...newChartConfig, prefix: e.target.value})}
+                          className="col-span-3"
+                          placeholder="e.g. $, €, £"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="suffix" className="text-right">
+                          Suffix
+                        </Label>
+                        <Input
+                          id="suffix"
+                          value={newChartConfig.suffix || ""}
+                          onChange={(e) => setNewChartConfig({...newChartConfig, suffix: e.target.value})}
+                          className="col-span-3"
+                          placeholder="e.g. %, pts"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
                 <DialogFooter>
                   <Button type="submit" onClick={handleCreateChart}>Add Chart</Button>
@@ -523,6 +678,7 @@ export default function DashboardBuilder() {
                 onLayoutChange={handleLayoutChange}
                 onSelectChart={setSelectedChart}
                 onDeleteChart={handleDeleteChart}
+                onDuplicateChart={handleDuplicateChart}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-96 text-center">

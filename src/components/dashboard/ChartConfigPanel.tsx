@@ -115,9 +115,90 @@ const ChartConfigPanel = ({ chart, dataSources, onUpdateChart }: ChartConfigPane
                     <SelectItem value="area">Area Chart</SelectItem>
                     <SelectItem value="scatter">Scatter Plot</SelectItem>
                     <SelectItem value="donut">Donut Chart</SelectItem>
+                    <SelectItem value="card">Card/Metric</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              
+              {/* Card-specific options */}
+              {editedChart.type === 'card' && (
+                <>
+                  <div>
+                    <Label htmlFor="card-metric">Metric Field</Label>
+                    <Select 
+                      value={editedChart.y || ''} 
+                      onValueChange={(value) => setEditedChart({...editedChart, y: value})}
+                    >
+                      <SelectTrigger id="card-metric" className="mt-1">
+                        <SelectValue placeholder="Select metric field" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableFields.map(field => (
+                          <SelectItem key={field} value={field}>
+                            {field}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="aggregation">Aggregation</Label>
+                    <Select 
+                      value={editedChart.aggregation || 'sum'} 
+                      onValueChange={(value) => setEditedChart({
+                        ...editedChart, 
+                        aggregation: value as "sum" | "average" | "count" | "max" | "min"
+                      })}
+                    >
+                      <SelectTrigger id="aggregation" className="mt-1">
+                        <SelectValue placeholder="Select aggregation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sum">Sum</SelectItem>
+                        <SelectItem value="average">Average</SelectItem>
+                        <SelectItem value="count">Count</SelectItem>
+                        <SelectItem value="max">Maximum</SelectItem>
+                        <SelectItem value="min">Minimum</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="card-title">Card Title</Label>
+                    <Input
+                      id="card-title"
+                      value={editedChart.cardTitle || ''}
+                      onChange={(e) => setEditedChart({...editedChart, cardTitle: e.target.value})}
+                      className="mt-1"
+                      placeholder="Override card title (optional)"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="prefix">Prefix</Label>
+                      <Input
+                        id="prefix"
+                        value={editedChart.prefix || ''}
+                        onChange={(e) => setEditedChart({...editedChart, prefix: e.target.value})}
+                        className="mt-1"
+                        placeholder="e.g. $, €"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="suffix">Suffix</Label>
+                      <Input
+                        id="suffix"
+                        value={editedChart.suffix || ''}
+                        onChange={(e) => setEditedChart({...editedChart, suffix: e.target.value})}
+                        className="mt-1"
+                        placeholder="e.g. %, pts"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               
               {(editedChart.type === 'bar' || editedChart.type === 'line' || editedChart.type === 'area') && (
                 <>
@@ -316,22 +397,40 @@ const ChartConfigPanel = ({ chart, dataSources, onUpdateChart }: ChartConfigPane
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="chart-width">Width (px)</Label>
+                <Label htmlFor="chart-width">Width (grid units)</Label>
                 <Input
                   id="chart-width"
                   type="number"
-                  defaultValue="600"
+                  value={editedChart.position.w}
+                  onChange={(e) => setEditedChart({
+                    ...editedChart, 
+                    position: {
+                      ...editedChart.position,
+                      w: Number(e.target.value)
+                    }
+                  })}
                   className="mt-1"
+                  min={1}
+                  max={12}
                 />
               </div>
               
               <div>
-                <Label htmlFor="chart-height">Height (px)</Label>
+                <Label htmlFor="chart-height">Height (grid units)</Label>
                 <Input
                   id="chart-height"
                   type="number"
-                  defaultValue="400"
+                  value={editedChart.position.h}
+                  onChange={(e) => setEditedChart({
+                    ...editedChart, 
+                    position: {
+                      ...editedChart.position,
+                      h: Number(e.target.value)
+                    }
+                  })}
                   className="mt-1"
+                  min={1}
+                  max={12}
                 />
               </div>
             </div>

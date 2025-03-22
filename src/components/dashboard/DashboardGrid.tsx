@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card } from "@/components/ui/card";
 import { ChartConfig } from "@/pages/DashboardBuilder";
 import ChartComponent from "./ChartComponent";
-import { MoreHorizontal, Edit3, Trash2, Maximize, Download } from "lucide-react";
+import { MoreHorizontal, Edit3, Trash2, Maximize, Download, Copy, ExternalLink } from "lucide-react";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -17,15 +17,18 @@ interface DashboardGridProps {
   onLayoutChange: (layout: any) => void;
   onSelectChart: (chart: ChartConfig) => void;
   onDeleteChart: (chartId: string) => void;
+  onDuplicateChart?: (chart: ChartConfig) => void;
 }
 
 const DashboardGrid = ({ 
   charts, 
   onLayoutChange, 
   onSelectChart, 
-  onDeleteChart 
+  onDeleteChart,
+  onDuplicateChart 
 }: DashboardGridProps) => {
   const [layouts, setLayouts] = useState<any>({ lg: [] });
+  const [expandedChart, setExpandedChart] = useState<string | null>(null);
 
   useEffect(() => {
     // Generate layouts from chart positions
@@ -37,8 +40,8 @@ const DashboardGrid = ({
           y: chart.position.y,
           w: chart.position.w,
           h: chart.position.h,
-          minW: 4,
-          minH: 3
+          minW: chart.type === 'card' ? 2 : 4,
+          minH: chart.type === 'card' ? 2 : 3
         }))
       };
       setLayouts(newLayouts);
@@ -49,6 +52,60 @@ const DashboardGrid = ({
     setLayouts(layouts);
     onLayoutChange(layout);
   };
+
+  // Handle exporting an individual chart
+  const handleExportChart = (chart: ChartConfig) => {
+    try {
+      const chartData = JSON.stringify(chart, null, 2);
+      const blob = new Blob([chartData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${chart.title.replace(/\s+/g, '_')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting chart:", error);
+    }
+  };
+
+  // Toggle full screen for a chart
+  const toggleFullScreen = (chartId: string) => {
+    if (expandedChart === chartId) {
+      setExpandedChart(null);
+    } else {
+      setExpandedChart(chartId);
+    }
+  };
+
+  // If a chart is in fullscreen mode, show only that chart
+  if (expandedChart) {
+    const expandedChartConfig = charts.find(chart => chart.id === expandedChart);
+    if (expandedChartConfig) {
+      return (
+        <div className="fixed inset-0 z-50 bg-white dark:bg-gray-800 flex flex-col p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+              {expandedChartConfig.title}
+            </h3>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setExpandedChart(null)}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Exit Fullscreen
+            </Button>
+          </div>
+          <div className="flex-1">
+            <ChartComponent config={expandedChartConfig} />
+          </div>
+        </div>
+      );
+    }
+  }
 
   return (
     <ResponsiveGridLayout
@@ -82,17 +139,23 @@ const DashboardGrid = ({
                     <Edit3 className="h-4 w-4 mr-2" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDeleteChart(chart.id)}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  {onDuplicateChart && (
+                    <DropdownMenuItem onClick={() => onDuplicateChart(chart)}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Duplicate
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => toggleFullScreen(chart.id)}>
                     <Maximize className="h-4 w-4 mr-2" />
                     Fullscreen
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExportChart(chart)}>
                     <Download className="h-4 w-4 mr-2" />
                     Export
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDeleteChart(chart.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
