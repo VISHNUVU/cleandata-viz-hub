@@ -1,6 +1,6 @@
 
 import { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom'
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from '@/components/ThemeProvider'
 import MainLayout from '@/components/MainLayout'
@@ -22,7 +22,7 @@ function App() {
       <DataProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<MainLayout />}>
+            <Route path="/" element={<MainLayout><Outlet /></MainLayout>}>
               <Route index element={<Index />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="data-upload" element={<DataUpload />} />

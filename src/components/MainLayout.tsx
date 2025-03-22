@@ -1,36 +1,25 @@
 
-import { useState, ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import { Menu } from 'lucide-react';
 import { Button } from './ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { SidebarMobileProvider, useSidebarMobile } from '@/hooks/use-sidebar-mobile';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
-  const [isOpen, setIsOpen] = useState(true);
-  const isMobile = useIsMobile();
-  
-  // Close sidebar by default on mobile
-  useEffect(() => {
-    if (isMobile) {
-      setIsOpen(false);
-    } else {
-      setIsOpen(true);
-    }
-  }, [isMobile]);
+function MainLayoutContent({ children }: MainLayoutProps) {
+  const { isOpen, setIsOpen, isMobile } = useSidebarMobile();
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <div className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
-          onClick={() => setIsOpen(false)}>
-      </div>
+      <div 
+        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+        onClick={() => setIsOpen(false)}
+      />
       
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <Sidebar />
-      </div>
+      <Sidebar />
       
       <Button 
         variant="outline"
@@ -47,5 +36,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function MainLayout({ children }: MainLayoutProps) {
+  return (
+    <SidebarMobileProvider>
+      <MainLayoutContent children={children} />
+    </SidebarMobileProvider>
   );
 }

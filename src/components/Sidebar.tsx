@@ -2,7 +2,7 @@
 import { useLocation, Link } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { Button } from '@/components/ui/button'
-import { useMobile } from '@/hooks/use-mobile'
+import { useSidebarMobile } from '@/hooks/use-sidebar-mobile'
 import {
   LayoutDashboard,
   Upload,
@@ -22,7 +22,7 @@ interface SidebarItem {
 
 export default function Sidebar() {
   const location = useLocation()
-  const { isMobile, isOpen, setIsOpen } = useMobile()
+  const { isMobile, isOpen, setIsOpen } = useSidebarMobile()
   
   const items: SidebarItem[] = [
     {
