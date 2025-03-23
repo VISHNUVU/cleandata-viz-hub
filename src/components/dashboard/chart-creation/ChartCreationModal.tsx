@@ -12,6 +12,7 @@ import GeneralSettingsTab from "./GeneralSettingsTab";
 import DataSettingsTab from "./DataSettingsTab";
 import StyleSettingsTab from "./StyleSettingsTab";
 import FilterSettingsTab from "./FilterSettingsTab";
+import AIAssistant from "../AIAssistant";
 
 interface ChartCreationModalProps {
   open: boolean;
@@ -100,13 +101,22 @@ const ChartCreationModal = ({ open, onOpenChange, onCreateChart, dataSources }: 
     setActiveTab("general");
   };
 
+  const handleAddChartSuggestion = (suggestion: Partial<ChartConfig>) => {
+    setNewChartConfig({
+      ...newChartConfig,
+      ...suggestion,
+      dataSource: newChartConfig.dataSource || (dataSources.length > 0 ? dataSources[0].id : "")
+    });
+    setActiveTab("general");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Add New Chart</DialogTitle>
           <DialogDescription>
-            Configure your chart settings. You can modify these later.
+            Configure your chart settings or use AI to get suggestions.
           </DialogDescription>
         </DialogHeader>
         
@@ -116,6 +126,7 @@ const ChartCreationModal = ({ open, onOpenChange, onCreateChart, dataSources }: 
             <TabsTrigger value="data">Data</TabsTrigger>
             <TabsTrigger value="style">Style</TabsTrigger>
             <TabsTrigger value="filters">Filters</TabsTrigger>
+            <TabsTrigger value="ai" className="ml-auto bg-primary/10 text-primary">AI Assist</TabsTrigger>
           </TabsList>
         
           <TabsContent value="general">
@@ -144,6 +155,14 @@ const ChartCreationModal = ({ open, onOpenChange, onCreateChart, dataSources }: 
             <FilterSettingsTab 
               chartConfig={newChartConfig}
               onUpdateConfig={(config) => setNewChartConfig({...newChartConfig, ...config})}
+            />
+          </TabsContent>
+          
+          <TabsContent value="ai">
+            <AIAssistant 
+              dataSources={dataSources}
+              selectedDataSource={newChartConfig.dataSource || ""}
+              onAddChart={handleAddChartSuggestion}
             />
           </TabsContent>
         </Tabs>
