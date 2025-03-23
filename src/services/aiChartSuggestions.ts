@@ -1,60 +1,79 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { ChartConfig } from "@/pages/DashboardBuilder";
-
-interface SuggestionRequest {
+interface ChartSuggestionRequest {
   dataSource: string;
-  fields: string[];
+  fields?: string[];
   prompt?: string;
 }
 
-interface SuggestionResponse {
-  charts: Partial<ChartConfig>[];
+interface ChartSuggestion {
+  title: string;
+  description: string;
+  type: string;
+  x?: string;
+  measures?: string[];
+}
+
+interface ChartSuggestionResponse {
+  charts: ChartSuggestion[];
   explanation: string;
 }
 
-export const getAIChartSuggestions = async (
-  request: SuggestionRequest
-): Promise<SuggestionResponse> => {
+export async function getAIChartSuggestions(
+  request: ChartSuggestionRequest
+): Promise<ChartSuggestionResponse> {
   try {
-    const { data, error } = await supabase.functions.invoke('generate-chart-suggestions', {
-      body: JSON.stringify(request),
+    const { dataSource, fields, prompt } = request;
+
+    const response = await fetch("/functions/v1/generate-chart-suggestions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        dataSource,
+        fields: fields || [],
+        prompt: prompt || "",
+      }),
     });
 
-    if (error) {
-      console.error('Error calling generate-chart-suggestions function:', error);
-      throw new Error('Failed to get AI chart suggestions');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Failed to get AI chart suggestions"
+      );
     }
 
-    return data as SuggestionResponse;
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error in getAIChartSuggestions:', error);
-    // Return mock suggestions for now
+    console.error("Error getting AI chart suggestions:", error);
+    
+    // Return a default response in case of error
     return {
       charts: [
         {
-          title: "Monthly Sales Trend",
-          description: "Shows sales performance over months",
-          type: "line",
-          x: "month",
-          measures: ["sales"]
-        },
-        {
-          title: "Revenue by Region",
-          description: "Breakdown of revenue by geographic region",
-          type: "pie",
-          x: "region",
-          y: "revenue"
-        },
-        {
-          title: "Products Comparison",
-          description: "Compare different product categories",
+          title: "Bar Chart",
+          description: "Standard bar chart for comparing values",
           type: "bar",
           x: "category",
-          measures: ["revenue", "units_sold"]
+          measures: ["value"]
+        },
+        {
+          title: "Line Chart",
+          description: "Time series visualization",
+          type: "line",
+          x: "date",
+          measures: ["value"]
+        },
+        {
+          title: "Pie Chart",
+          description: "Distribution across categories",
+          type: "pie",
+          x: "category",
+          measures: ["value"]
         }
       ],
-      explanation: "Based on your data, I recommend these visualizations to best represent your sales information. The line chart shows trends over time, the pie chart provides a regional breakdown, and the bar chart allows for direct comparison between products."
+      explanation: "These are default suggestions. For better suggestions, please try again."
     };
   }
-};
+}
