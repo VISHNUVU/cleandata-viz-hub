@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,18 +7,9 @@ import { getRecentUploads } from "@/services/fileDataService";
 import { v4 as uuidv4 } from "uuid";
 import { Plus, LayoutTemplate } from "lucide-react";
 
-// Import types from our types file
 import { ChartConfig, ChartType, Dashboard, DashboardTemplate } from "@/types/dashboard";
+import { ChartCreationModal } from "@/components/dashboard/chart-creation";
 
-// Import our components
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import DashboardGrid from "@/components/dashboard/DashboardGrid";
-import ChartConfigPanelContainer from "@/components/dashboard/ChartConfigPanelContainer";
-import ChartCreationModal from "@/components/dashboard/ChartCreationModal";
-import EmptyDashboard from "@/components/dashboard/EmptyDashboard";
-import DashboardTemplates from "@/components/dashboard/DashboardTemplates";
-
-// Re-export types with proper syntax for isolatedModules
 export type { ChartType, Dashboard, ChartConfig };
 
 export default function DashboardBuilder() {
@@ -33,7 +23,6 @@ export default function DashboardBuilder() {
   const [dashboardDescription, setDashboardDescription] = useState("");
   const [isEditingDashboard, setIsEditingDashboard] = useState(false);
 
-  // Load available data sources when component mounts
   useEffect(() => {
     const fetchDataSources = async () => {
       try {
@@ -52,7 +41,6 @@ export default function DashboardBuilder() {
     fetchDataSources();
   }, [toast]);
 
-  // Create a new dashboard if none exists
   useEffect(() => {
     if (dashboards.length === 0) {
       const newDashboard: Dashboard = {
@@ -66,7 +54,6 @@ export default function DashboardBuilder() {
     }
   }, [dashboards]);
 
-  // Create a new chart and add it to the active dashboard
   const handleCreateChart = (chart: ChartConfig) => {
     if (!activeDashboard) return;
     
@@ -86,7 +73,6 @@ export default function DashboardBuilder() {
     });
   };
 
-  // Delete a chart from the active dashboard
   const handleDeleteChart = (chartId: string) => {
     if (!activeDashboard) return;
 
@@ -111,7 +97,6 @@ export default function DashboardBuilder() {
     });
   };
 
-  // Update an existing chart
   const handleUpdateChart = (updatedChart: ChartConfig) => {
     if (!activeDashboard) return;
 
@@ -136,7 +121,6 @@ export default function DashboardBuilder() {
     });
   };
 
-  // Update dashboard title and description
   const handleUpdateDashboard = () => {
     if (!activeDashboard) return;
 
@@ -158,7 +142,6 @@ export default function DashboardBuilder() {
     });
   };
 
-  // Save the dashboard
   const handleSaveDashboard = () => {
     toast({
       title: "Dashboard Saved",
@@ -166,7 +149,6 @@ export default function DashboardBuilder() {
     });
   };
 
-  // Export the dashboard
   const handleExportDashboard = () => {
     try {
       const dashboardData = JSON.stringify(activeDashboard, null, 2);
@@ -194,7 +176,6 @@ export default function DashboardBuilder() {
     }
   };
 
-  // Share the dashboard
   const handleShareDashboard = () => {
     const mockShareableLink = `https://example.com/dashboards/${activeDashboard?.id}`;
     
@@ -214,7 +195,6 @@ export default function DashboardBuilder() {
       });
   };
 
-  // Create new dashboard
   const handleCreateDashboard = () => {
     const newDashboard: Dashboard = {
       id: uuidv4(),
@@ -234,11 +214,9 @@ export default function DashboardBuilder() {
     });
   };
 
-  // Apply a dashboard template
   const handleApplyTemplate = (template: DashboardTemplate) => {
     if (!activeDashboard || !template) return;
 
-    // Generate complete chart configs from template partial configs
     const templateCharts: ChartConfig[] = template.charts.map(chartTemplate => {
       return {
         id: uuidv4(),
@@ -253,7 +231,6 @@ export default function DashboardBuilder() {
       } as ChartConfig;
     });
 
-    // Apply the template to the active dashboard
     const updatedDashboard = {
       ...activeDashboard,
       title: template.name,
@@ -275,7 +252,6 @@ export default function DashboardBuilder() {
     });
   };
 
-  // Handle layout changes
   const handleLayoutChange = (layout: any) => {
     if (!activeDashboard) return;
 
@@ -307,7 +283,6 @@ export default function DashboardBuilder() {
     setActiveDashboard(updatedDashboard);
   };
 
-  // Function to duplicate a chart
   const handleDuplicateChart = (chart: ChartConfig) => {
     if (!activeDashboard) return;
     
@@ -341,7 +316,6 @@ export default function DashboardBuilder() {
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto">
-        {/* Dashboard Header */}
         <DashboardHeader
           activeDashboard={activeDashboard}
           dashboards={dashboards}
@@ -363,7 +337,6 @@ export default function DashboardBuilder() {
           onSetIsEditingDashboard={setIsEditingDashboard}
         />
 
-        {/* Dashboard Content */}
         <div className="grid grid-cols-1 gap-6">
           <div className="flex justify-end space-x-3">
             <DashboardTemplates onSelectTemplate={handleApplyTemplate} />
@@ -381,7 +354,6 @@ export default function DashboardBuilder() {
             </Button>
           </div>
           
-          {/* Dashboard Grid */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow min-h-[600px] p-4">
             {activeDashboard && activeDashboard.charts.length > 0 ? (
               <DashboardGrid
@@ -397,7 +369,6 @@ export default function DashboardBuilder() {
           </div>
         </div>
 
-        {/* Chart Configuration Panel */}
         {selectedChart && (
           <ChartConfigPanelContainer
             chart={selectedChart}
