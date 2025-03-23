@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,11 @@ import { Plus, LayoutTemplate } from "lucide-react";
 
 import { ChartConfig, ChartType, Dashboard, DashboardTemplate } from "@/types/dashboard";
 import { ChartCreationModal } from "@/components/dashboard/chart-creation";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardTemplates from "@/components/dashboard/DashboardTemplates";
+import DashboardGrid from "@/components/dashboard/DashboardGrid";
+import EmptyDashboard from "@/components/dashboard/EmptyDashboard";
+import ChartConfigPanelContainer from "@/components/dashboard/ChartConfigPanelContainer";
 
 export type { ChartType, Dashboard, ChartConfig };
 

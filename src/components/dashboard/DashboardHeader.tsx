@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { Dashboard } from "@/pages/DashboardBuilder";
+import { Dashboard } from "@/types/dashboard";
 import { Save, Download, Share2, Plus, Edit3 } from "lucide-react";
 
 interface DashboardHeaderProps {

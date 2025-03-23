@@ -6,7 +6,7 @@ import "react-resizable/css/styles.css";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card } from "@/components/ui/card";
-import { ChartConfig } from "@/pages/DashboardBuilder";
+import { ChartConfig } from "@/types/dashboard";
 import ChartComponent from "./ChartComponent";
 import { MoreHorizontal, Edit3, Trash2, Maximize, Download, Copy, ExternalLink } from "lucide-react";
 
