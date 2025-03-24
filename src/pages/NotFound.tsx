@@ -1,38 +1,27 @@
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { LayoutDashboard } from "lucide-react";
-
-const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
+export default function NotFound() {
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="text-center max-w-md mx-auto animate-fade-in">
-        <div className="w-24 h-24 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-6">
-          <span className="text-red-500 dark:text-red-400 text-5xl font-bold">404</span>
-        </div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Page not found</h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-          We couldn't find the page you're looking for. The page might have been moved or doesn't exist.
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="text-center">
+        <h1 className="text-9xl font-bold text-gray-900 dark:text-white">404</h1>
+        <h2 className="mt-4 text-3xl font-semibold text-gray-900 dark:text-white">Page not found</h2>
+        <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
+          Sorry, we couldn't find the page you're looking for.
         </p>
-        <Link to="/">
-          <Button className="flex items-center gap-2 mx-auto">
-            <LayoutDashboard className="h-4 w-4" />
-            Return to Dashboard
+        <div className="mt-8">
+          <Button
+            onClick={() => navigate('/')}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
           </Button>
-        </Link>
+        </div>
       </div>
     </div>
   );
-};
-
-export default NotFound;
+}

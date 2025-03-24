@@ -1,69 +1,99 @@
-# Welcome to your Lovable project
+# CleanData Viz Hub
 
-## Project info
+A modern web application for data cleansing and visualization, built with React, TypeScript, and Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/b46280b2-cfaf-4eb8-b231-a4db937b0c66
+## Features
 
-## How can I edit this code?
+- 📊 Data Analysis: Analyze your data with detailed column statistics and quality metrics
+- 🧹 Data Cleansing: Identify and fix data quality issues automatically
+- 📈 Visualization: Create beautiful visualizations of your cleaned data
+- 🌓 Dark Mode: Built-in dark mode support
+- 📱 Responsive Design: Works on all screen sizes
+- 🔒 Type Safety: Built with TypeScript for better development experience
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Supabase](https://supabase.com/)
+- [React Router](https://reactrouter.com/)
+- [Lucide Icons](https://lucide.dev/)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b46280b2-cfaf-4eb8-b231-a4db937b0c66) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+
+- npm or yarn
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/cleandata-viz-hub.git
+   cd cleandata-viz-hub
+   ```
 
-Follow these steps:
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Create a `.env` file in the root directory and add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+5. Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Building for Production
+
+To create a production build:
+
+```bash
+npm run build
+# or
+yarn build
 ```
 
-**Edit a file directly in GitHub**
+The build artifacts will be stored in the `dist/` directory.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/         # Reusable components
+│   ├── ui/            # UI components from shadcn/ui
+│   └── ...
+├── contexts/          # React contexts
+├── hooks/             # Custom hooks
+├── lib/              # Utility functions
+├── pages/            # Page components
+├── services/         # API and service functions
+└── App.tsx           # Root component
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contributing
 
-## What technologies are used for this project?
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-This project is built with .
+## License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b46280b2-cfaf-4eb8-b231-a4db937b0c66) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

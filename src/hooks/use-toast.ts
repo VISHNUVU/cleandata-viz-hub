@@ -4,6 +4,7 @@ import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+import { useToast as useToastBase } from "@/components/ui/use-toast"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -168,24 +169,19 @@ function toast({ ...props }: Toast) {
   }
 }
 
-function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
-
-  React.useEffect(() => {
-    listeners.push(setState)
-    return () => {
-      const index = listeners.indexOf(setState)
-      if (index > -1) {
-        listeners.splice(index, 1)
-      }
-    }
-  }, [state])
+export function useToast() {
+  const { toast } = useToastBase()
 
   return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    toast: (props: {
+      title?: string
+      description?: string
+      variant?: 'default' | 'destructive'
+    }) => {
+      toast({
+        ...props,
+        duration: 5000,
+      })
+    },
   }
 }
-
-export { useToast, toast }

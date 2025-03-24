@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom'
 import { Toaster } from "@/components/ui/sonner"

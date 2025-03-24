@@ -1,376 +1,163 @@
-
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  AreaChart as AreaChartIcon, 
-  BarChart3, 
-  ChevronDown, 
-  Download, 
-  Filter, 
-  LineChart as LineChartIcon, 
-  PieChart as PieChartIcon, 
-  RefreshCw, 
-  Save, 
-  Share2 
-} from "lucide-react";
-import { 
-  BarChart, 
-  AreaChart, 
-  LineChart, 
-  PieChart, 
-  CartesianGrid, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  Bar, 
-  Area, 
-  Line, 
-  Pie, 
-  Cell,
-  Legend 
-} from "recharts";
+  ArrowLeft,
+  BarChart3,
+  LineChart,
+  PieChart,
+  ScatterChart,
+  Download,
+  Share2,
+  Settings
+} from 'lucide-react';
 
-const sampleData = [
-  { name: "Jan", value: 400, category: "A" },
-  { name: "Feb", value: 300, category: "B" },
-  { name: "Mar", value: 600, category: "C" },
-  { name: "Apr", value: 200, category: "D" },
-  { name: "May", value: 500, category: "E" },
-  { name: "Jun", value: 350, category: "F" },
-  { name: "Jul", value: 450, category: "G" },
-];
-
-const pieData = [
-  { name: "North America", value: 400 },
-  { name: "Europe", value: 300 },
-  { name: "Asia", value: 500 },
-  { name: "South America", value: 200 },
-  { name: "Africa", value: 100 },
+// Mock data for demonstration
+const chartTypes = [
+  {
+    id: 'bar',
+    name: 'Bar Chart',
+    icon: BarChart3,
+    description: 'Compare values across categories'
+  },
+  {
+    id: 'line',
+    name: 'Line Chart',
+    icon: LineChart,
+    description: 'Show trends over time'
+  },
+  {
+    id: 'pie',
+    name: 'Pie Chart',
+    icon: PieChart,
+    description: 'Display proportions of a whole'
+  },
+  {
+    id: 'scatter',
+    name: 'Scatter Plot',
+    icon: ScatterChart,
+    description: 'Visualize relationships between variables'
+  }
 ];
 
 export default function Visualization() {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
-          <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium mb-2">
-            <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
-            Interactive Charts
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="mb-4"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Data Visualization</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Create and customize visualizations of your data
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Data Visualization</h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Create and customize interactive visualizations from your data.</p>
-        </div>
-        
-        {/* Visualization Workspace */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Chart Builder Area */}
-          <div className="col-span-1 lg:col-span-3 space-y-6 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
-            {/* Toolbar */}
-            <Card className="glass-card p-4">
-              <div className="flex flex-wrap gap-3 items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    Refresh
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <Filter className="h-3.5 w-3.5" />
-                    Filter Data
-                  </Button>
-                  <div className="relative">
-                    <Button variant="outline" size="sm" className="h-8 gap-1">
-                      <span>Sales Data</span>
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <Save className="h-3.5 w-3.5" />
-                    Save
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <Share2 className="h-3.5 w-3.5" />
-                    Share
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <Download className="h-3.5 w-3.5" />
-                    Export
-                  </Button>
-                </div>
-              </div>
-            </Card>
-            
-            {/* Chart Visualization Area */}
-            <Card className="glass-card overflow-hidden">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Monthly Sales Analysis</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Visualization of monthly sales performance by category</p>
-              </div>
-              
-              <Tabs defaultValue="bar" className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <TabsList>
-                    <TabsTrigger value="bar" className="flex items-center gap-1.5">
-                      <BarChart3 className="h-4 w-4" />
-                      <span>Bar</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="line" className="flex items-center gap-1.5">
-                      <LineChartIcon className="h-4 w-4" />
-                      <span>Line</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="area" className="flex items-center gap-1.5">
-                      <AreaChartIcon className="h-4 w-4" />
-                      <span>Area</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="pie" className="flex items-center gap-1.5">
-                      <PieChartIcon className="h-4 w-4" />
-                      <span>Pie</span>
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center text-sm">
-                      <div className="w-3 h-3 rounded-full bg-primary mr-1.5"></div>
-                      <span className="text-gray-600 dark:text-gray-400">Value</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <div className="w-3 h-3 rounded-full bg-blue-400 mr-1.5"></div>
-                      <span className="text-gray-600 dark:text-gray-400">Category</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <TabsContent value="bar" className="mt-0">
-                  <div className="h-[400px] w-full flex justify-center items-center">
-                    <BarChart
-                      width={800}
-                      height={400}
-                      data={sampleData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <YAxis tick={{ fill: '#6b7280' }} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="line" className="mt-0">
-                  <div className="h-[400px] w-full flex justify-center items-center">
-                    <LineChart
-                      width={800}
-                      height={400}
-                      data={sampleData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <YAxis tick={{ fill: '#6b7280' }} />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
-                    </LineChart>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="area" className="mt-0">
-                  <div className="h-[400px] w-full flex justify-center items-center">
-                    <AreaChart
-                      width={800}
-                      height={400}
-                      data={sampleData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-                    >
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="name" tick={{ fill: '#6b7280' }} />
-                      <YAxis tick={{ fill: '#6b7280' }} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorValue)" />
-                    </AreaChart>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="pie" className="mt-0">
-                  <div className="h-[400px] w-full flex justify-center items-center">
-                    <PieChart
-                      width={400}
-                      height={400}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-                    >
-                      <Pie
-                        data={pieData}
-                        cx={200}
-                        cy={200}
-                        innerRadius={60}
-                        outerRadius={140}
-                        paddingAngle={1}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 0 ? 'hsl(var(--primary))' : ['#3b82f6', '#10b981', '#f59e0b', '#ec4899'][index % 4]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </Card>
-            
-            {/* Chart Customization */}
-            <Card className="glass-card p-6 animate-slide-in-up" style={{ animationDelay: '0.3s' }}>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Chart Customization</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chart Title</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    placeholder="Enter chart title"
-                    defaultValue="Monthly Sales Analysis"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">X-Axis Label</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    placeholder="X-Axis label"
-                    defaultValue="Month"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Y-Axis Label</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    placeholder="Y-Axis label"
-                    defaultValue="Sales Value"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color Scheme</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                    <option>Default</option>
-                    <option>Blues</option>
-                    <option>Greens</option>
-                    <option>Purples</option>
-                    <option>Custom</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Legend Position</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                    <option>Top</option>
-                    <option>Bottom</option>
-                    <option>Left</option>
-                    <option>Right</option>
-                    <option>None</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grid Lines</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                    <option>Show Both</option>
-                    <option>X-Axis Only</option>
-                    <option>Y-Axis Only</option>
-                    <option>None</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="mt-6 flex justify-end">
-                <Button>
-                  Apply Changes
-                </Button>
-              </div>
-            </Card>
-          </div>
-          
-          {/* Sidebar */}
-          <div className="col-span-1 animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
-            <Card className="glass-card p-6 sticky top-8">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Chart Templates</h3>
-              
-              <div className="space-y-3">
-                <button className="w-full flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors hover:border-primary/50">
-                  <BarChart3 className="h-5 w-5 text-primary mr-3" />
-                  <div className="text-left">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Basic Bar Chart</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Compare values across categories</p>
-                  </div>
-                </button>
-                
-                <button className="w-full flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors hover:border-primary/50">
-                  <LineChartIcon className="h-5 w-5 text-blue-500 mr-3" />
-                  <div className="text-left">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Trend Line Chart</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Show data changes over time</p>
-                  </div>
-                </button>
-                
-                <button className="w-full flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors hover:border-primary/50">
-                  <PieChartIcon className="h-5 w-5 text-emerald-500 mr-3" />
-                  <div className="text-left">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Distribution Pie Chart</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Show proportional distribution</p>
-                  </div>
-                </button>
-                
-                <button className="w-full flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors hover:border-primary/50">
-                  <AreaChartIcon className="h-5 w-5 text-indigo-500 mr-3" />
-                  <div className="text-left">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Area Chart</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Highlight total volume changes</p>
-                  </div>
-                </button>
-              </div>
-              
-              <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Data Sources</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <input type="radio" id="sales-data" name="data-source" className="h-4 w-4 text-primary border-gray-300 focus:ring-primary" defaultChecked />
-                    <label htmlFor="sales-data" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                      Sales Data (2023)
-                    </label>
-                  </div>
-                  <div className="flex items-center">
-                    <input type="radio" id="customer-feedback" name="data-source" className="h-4 w-4 text-primary border-gray-300 focus:ring-primary" />
-                    <label htmlFor="customer-feedback" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                      Customer Feedback
-                    </label>
-                  </div>
-                  <div className="flex items-center">
-                    <input type="radio" id="product-inventory" name="data-source" className="h-4 w-4 text-primary border-gray-300 focus:ring-primary" />
-                    <label htmlFor="product-inventory" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                      Product Inventory
-                    </label>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <Button variant="outline" className="w-full">
-                  Browse All Templates
-                </Button>
-              </div>
-            </Card>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+            <Button variant="outline">
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </Button>
+            <Button variant="outline">
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Button>
           </div>
         </div>
+
+        {/* Chart Type Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {chartTypes.map((chart) => {
+            const Icon = chart.icon;
+            return (
+              <Card
+                key={chart.id}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Icon className="h-5 w-5 text-primary" />
+                    <span>{chart.name}</span>
+                  </CardTitle>
+                  <CardDescription>
+                    {chart.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full">
+                    Create Chart
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Visualization Preview */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Chart Preview</CardTitle>
+            <CardDescription>
+              Select a chart type to preview your data visualization
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-96 flex items-center justify-center border-2 border-dashed rounded-lg">
+              <p className="text-gray-600 dark:text-gray-400">
+                Select a chart type to begin
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Chart Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Chart Configuration</CardTitle>
+            <CardDescription>
+              Customize your chart appearance and data mapping
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  Data Mapping
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Select which columns to use for your visualization
+                </p>
+                <Button variant="outline" className="mt-4">
+                  Configure Data
+                </Button>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  Appearance
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Customize colors, labels, and other visual properties
+                </p>
+                <Button variant="outline" className="mt-4">
+                  Customize Style
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
