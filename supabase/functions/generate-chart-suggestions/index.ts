@@ -1,8 +1,7 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || '';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,45 +15,26 @@ serve(async (req) => {
   }
 
   try {
-    const { dataSource, fields, prompt } = await req.json();
-
-    // If no API key is set yet, return a helpful error message
     if (!GEMINI_API_KEY) {
-      return new Response(
-        JSON.stringify({
-          error: "Gemini API key not configured",
-          message: "Please set up your GEMINI_API_KEY in the Supabase dashboard"
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error('GEMINI_API_KEY is not configured in environment variables');
     }
 
-    // Create prompt for chart suggestions
-    const aiPrompt = `
-      You are a data visualization expert.
-      ${prompt ? `The user asks: "${prompt}"` : "Generate useful chart suggestions for data visualization."}
-      
-      Data source: ${dataSource}
-      ${fields && fields.length > 0 ? `Available fields: ${fields.join(', ')}` : ''}
-      
-      Suggest 3 different chart types that would be useful for this data. For each chart, provide:
-      1. A title
-      2. A brief description
-      3. The recommended chart type (choose from: bar, line, pie, area, scatter, donut)
-      4. The recommended field to use for x-axis or category dimension
-      5. The recommended field(s) to use for measures
-      
-      Also include a brief explanation of why these suggestions would be valuable.
-      
-      Return your response as a JSON object with two keys:
-      - "charts": an array of chart configurations with title, description, type, x, and measures
-      - "explanation": a string explaining the rationale for these suggestions
-    `;
+    const { dataSource, fields, prompt } = await req.json();
+    
+    // Construct a more detailed prompt for the AI
+    let aiPrompt = `You are an expert data visualization assistant. `;
+    
+    if (prompt) {
+      aiPrompt += `The user is asking: "${prompt}". `;
+    }
+    
+    aiPrompt += `Based on a dataset with the following fields: ${fields.join(', ')}, `;
+    aiPrompt += `suggest appropriate chart visualizations that would best represent this data. `;
+    aiPrompt += `For each chart suggestion, provide a title, description, chart type (choose from: bar, line, pie, area, scatter, donut, card), `;
+    aiPrompt += `and which fields should be used for x-axis and measures.`;
+    aiPrompt += `Return the response in JSON format with this structure: { "charts": [{"title": "", "description": "", "type": "", "x": "", "measures": [""]}], "explanation": "" }`;
 
-    // Call the Gemini API
+    // Call Gemini AI API
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY, {
       method: 'POST',
       headers: {
@@ -71,71 +51,81 @@ serve(async (req) => {
           }
         ],
         generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 1024,
+          temperature: 0.2,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048
         }
-      }),
+      })
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Gemini API error:', errorData);
+      throw new Error('Failed to get suggestions from AI');
+    }
+
     const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
+    // Extract JSON from the response
     let result;
     try {
-      // Try to parse the response as JSON first
-      const generatedText = data.candidates[0].content.parts[0].text;
-      
-      // Extract JSON object from the text - sometimes the AI includes markdown code formatting
-      const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) || 
-                         generatedText.match(/```\n([\s\S]*?)\n```/) ||
-                         generatedText.match(/({[\s\S]*})/);
-                         
-      const jsonString = jsonMatch ? jsonMatch[1] : generatedText;
+      // Look for JSON in the response text
+      const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/{[\s\S]*?}/);
+      const jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : text;
       result = JSON.parse(jsonString);
-    } catch (error) {
-      console.error("Error parsing AI response:", error);
-      
-      // Fallback to default suggestions
+    } catch (e) {
+      console.error('Error parsing JSON from AI response:', e);
+      // Fallback structure if parsing fails
       result = {
         charts: [
           {
-            title: "Data Distribution",
-            description: "Shows the distribution of values in your dataset",
+            title: "Data Visualization",
+            description: "Visualization of the dataset",
             type: "bar",
-            x: "category",
-            measures: ["value"]
-          },
-          {
-            title: "Time Series Analysis",
-            description: "Visualizes data changes over time",
-            type: "line",
-            x: "date",
-            measures: ["value"]
-          },
-          {
-            title: "Proportion Breakdown",
-            description: "Shows the relative proportions of categories",
-            type: "pie",
-            x: "category",
-            y: "value"
+            x: fields[0] || "category",
+            measures: [fields[1] || "value"]
           }
         ],
-        explanation: "These are default chart suggestions. For more relevant charts, please provide specific information about your data."
+        explanation: "This is a basic visualization of your data."
       };
     }
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    console.error("Error in generate-chart-suggestions function:", error);
+    console.error('Error in generate-chart-suggestions function:', error);
     
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    return new Response(JSON.stringify({
+      charts: [
+        {
+          title: "Bar Chart",
+          description: "Standard bar chart for comparing values",
+          type: "bar",
+          x: "category",
+          measures: ["value"]
+        },
+        {
+          title: "Line Chart",
+          description: "Time series visualization",
+          type: "line",
+          x: "date",
+          measures: ["value"]
+        },
+        {
+          title: "Pie Chart",
+          description: "Distribution across categories",
+          type: "pie",
+          x: "category",
+          measures: ["value"]
+        }
+      ],
+      explanation: "These are default suggestions. For better suggestions, please try again."
+    }), {
+      status: error.message.includes('not configured') ? 500 : 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
